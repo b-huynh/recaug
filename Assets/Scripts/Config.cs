@@ -18,7 +18,7 @@ using Windows.Web.Http;
 
 [System.Serializable]
 public class ConfigParameters {
-	public string ServerIP = "192.168.100.108";
+	public string ServerIP = "192.168.2.251";
 }
 
 public static class Config {
@@ -26,19 +26,23 @@ public static class Config {
 	public static string ORListenPort = "12000";
 	public static string EyeTrackingPort = "13000";
 	public static string DebugLogPort = "9999";
-	public static string FileName = "default";
+	public static string CurrentFileName = "default_config.json";
+	public static string CurrentFilePath = null;
 	public static ConfigParameters Params { get; private set; } = new ConfigParameters();
 
 	public static void LoadConfig(string filename) {
-		// Check if file exists
-		string path = Path.Combine(Application.persistentDataPath, filename);
-		if (File.Exists(path)) {	
-			string configJson = Encoding.UTF8.GetString(File.ReadAllBytes(path));
+		CurrentFileName = filename;
+		CurrentFilePath = Path.Combine(Application.persistentDataPath, CurrentFileName); 
+
+		// Check if file exists, create if it doesn't
+		if (File.Exists(CurrentFilePath)) {
+			string configJson = Encoding.UTF8.GetString(File.ReadAllBytes(CurrentFilePath));
 			Params = JsonUtility.FromJson<ConfigParameters>(configJson);
+			Debug.Log("Loaded config file.");
 		} else {
-			File.WriteAllBytes(path, Encoding.UTF8.GetBytes(JsonUtility.ToJson(Params)));
+			Debug.Log("No config file found, creating with default params.");
+			WriteConfig();
 		}
-		FileName = filename;
 	}
 
 	public static void UpdateConfig(string key, string value) {
@@ -55,7 +59,6 @@ public static class Config {
 	}
 
 	private static void WriteConfig() {
-		string path = Path.Combine(Application.persistentDataPath, Config.FileName);
-		File.WriteAllBytes(path, Encoding.UTF8.GetBytes(JsonUtility.ToJson(Params)));
+		File.WriteAllBytes(CurrentFilePath, Encoding.UTF8.GetBytes(JsonUtility.ToJson(Params)));
 	}
 }

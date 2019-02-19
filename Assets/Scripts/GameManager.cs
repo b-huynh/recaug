@@ -11,16 +11,21 @@ public class GameManager : Singleton<GameManager> {
     public GameObject debugOverlay = null;
     private InspectorTab currentTab = InspectorTab.CONFIG;
 
-    private bool debug = false;
+    public bool debug = false;
     private bool isEnteringCommand = false;
     private string currentCommand = "";
+
+
+    private GameObject evalOriginPoint = null;
+
+    private int firstFrameLatency = 0; // Should be milliseconds
 
 
     // config stuff
     private string configFileName = "config.json";
 
     void Start() {
-        Config.LoadConfig(configFileName);
+        Config.LoadConfig(configFileName);        
     }
 
     void Update() {
@@ -56,13 +61,16 @@ public class GameManager : Singleton<GameManager> {
                     currentTab = InspectorTab.CONFIG;
                 if (Input.GetKeyDown(KeyCode.Alpha2))
                     currentTab = InspectorTab.LOG;
-                
 
                 // Toggle features
                 if (Input.GetKeyDown(KeyCode.P))
                     Toggle("Streaming", ref WebcamStreaming.Instance.streaming);
                 if (Input.GetKeyDown(KeyCode.D))
                     Toggle("Debug Mode", ref debug);
+                if (Input.GetKeyDown(KeyCode.R))
+                    Toggle("Raw Points Mode", ref HologramManager.Instance.rawPointsMode);
+                if (Input.GetKeyDown(KeyCode.S))
+                    HologramManager.Instance.SaveLog();
             }
         }
     }
@@ -84,20 +92,33 @@ public class GameManager : Singleton<GameManager> {
 
     private void DrawTextOverlay(GameObject overlay) {
         string toDraw = "";
-        int lineLength = 120;
+        int lineLength = 60;
 
         // Draw Command Input
         toDraw += "[COMMAND]: " + currentCommand + "\n";
-        toDraw += "\n" + new string('_', lineLength) + "\n";
+        // toDraw += "\n" + new string('_', lineLength) + "\n";
+
+        // Draw State Variables
+        toDraw += "[STREAMING] " + WebcamStreaming.Instance.streaming.ToString() + "\n";
+        toDraw += "[RAW POINTS] " + HologramManager.Instance.rawPointsMode.ToString() + "\n";
+        toDraw += "[LOGGING POINTS] " + HologramManager.Instance.isLogging.ToString() + "\n";
+        // toDraw += "[DEBUG] " + debug.ToString() + "\n";
+        
+        // Latency
+        if (WebcamStreaming.Instance.firstSent && WebcamStreaming.Instance.firstReceived)
+        {
+            firstFrameLatency = (WebcamStreaming.Instance.firstReceivedTime - WebcamStreaming.Instance.firstSentTime).Milliseconds;
+        }
+        toDraw += "[FRAME LATENCY] " + firstFrameLatency.ToString() + "ms \n";
 
         // Draw inspector tabs
         switch(currentTab) {
             case InspectorTab.CONFIG:
-                toDraw += "|**config**| log |\n>>\n";
+                toDraw += "|*config| log |\n>>\n";
                 toDraw += JsonUtility.ToJson(Config.Params, true);
                 break;
             case InspectorTab.LOG:
-                toDraw += "| config |**log**|\n>>\n";
+                toDraw += "| config |*log|\n>>\n";
                 toDraw += "LOG NOT YET IMPLEMENTED";
                 break;
         }

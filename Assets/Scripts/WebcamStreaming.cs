@@ -28,16 +28,22 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
         public byte[] frameData;
     }
 
-	void Start() {
+    public bool firstSent = false;
+    public DateTime firstSentTime;
+
+    public bool firstReceived = false;
+    public DateTime firstReceivedTime;
+
+    void Start() {
         //Fetch a pointer to Unity's spatial coordinate system if you need pixel mapping
         _spatialCoordinateSystemPtr = UnityEngine.XR.WSA.WorldManager.GetNativeISpatialCoordinateSystemPtr();
 
         _frameNum = -1;
         CameraStreamHelper.Instance.GetVideoCaptureAsync(OnVideoCaptureCreated);
-        StartStreaming();
+        InitStreaming();
 	}
 
-    void StartStreaming() {
+    void InitStreaming() {
     #if !UNITY_EDITOR
         udpClient = new UdpClientUWP();
         udpClient.messageReceivedEvent.AddListener(OnUdpMessageReceived);
@@ -122,6 +128,12 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
             #if !UNITY_EDITOR
                 udpClient.SendBytes(framePacket, Config.Params.ServerIP, Config.ORListenPort);
+                if (!firstSent)
+                {
+                    firstSentTime = DateTime.Now;
+                    firstSent = true;
+                }
+                //Debug.LogFormat("Sent to: {0}:{1}", Config.Params.ServerIP, Config.ORListenPort);
             #endif
             });
         }
@@ -161,6 +173,12 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
         // Deserialize predictions
         Predictions pred = JsonUtility.FromJson<Predictions>(jsonStr);
+
+        if (!firstReceived)
+        {
+            firstReceivedTime = DateTime.Now;
+            firstReceived = true;
+        }
 
         HologramManager.Instance.VisualizeObjectLabels(ref camera2WorldMatrix, ref projectionMatrix, pred);
     }

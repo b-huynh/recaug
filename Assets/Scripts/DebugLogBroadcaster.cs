@@ -13,8 +13,18 @@ using System.Net;
 
 public class DebugLogBroadcaster : MonoBehaviour 
 {
-	public string debugServerIP = "192.168.100.122";
-	public int broadcastPort = 9999;
+	private string debugServerIP = "192.168.2.251";
+	private string broadcastPort = "9999";
+
+    private UdpClientUWP udpClient = null;
+
+    void Start() {
+#if !UNITY_EDITOR
+        udpClient = new UdpClientUWP();
+        // udpClient.messageReceivedEvent.AddListener(OnUdpMessageReceived);
+        // udpClient.BindAny(Config.ORListenPort);
+#endif
+    }
 
     void OnEnable() 
     {
@@ -34,9 +44,10 @@ public class DebugLogBroadcaster : MonoBehaviour
                                    condition,
                                    "\n    " + stackTrace.Replace ("\n", "\n    "));
 #if !UNITY_EDITOR
-        UDPCommunication comm = UDPCommunication.Instance;
-        if (comm.isReady)
-            comm.SendUDPMessage(debugServerIP, broadcastPort.ToString(), Encoding.UTF8.GetBytes(msg));
+        udpClient.SendBytes(Encoding.UTF8.GetBytes(msg), debugServerIP, broadcastPort);
+        // UDPCommunication comm = UDPCommunication.Instance;
+        // if (comm.isReady)
+        //     comm.SendUDPMessage(debugServerIP, broadcastPort.ToString(), Encoding.UTF8.GetBytes(msg));
 #endif
     }
 }
