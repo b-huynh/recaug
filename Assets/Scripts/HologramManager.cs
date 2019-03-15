@@ -76,7 +76,12 @@ public class HologramManager : Singleton<HologramManager> {
                     UpdateObjectMemory(timestamp, la, hitInfo);
                 }
 
-                Prediction p = new Prediction(la.className, hitInfo.point.x, hitInfo.point.y, hitInfo.point.z);
+                // Add small delta to move object point away from mesh
+                Vector3 towardsUser = (Camera.main.transform.position - hitInfo.point).normalized;
+                float delta = 0.03f;
+                Vector3 closerPos = hitInfo.point + (towardsUser * delta);
+                // Prediction p = new Prediction(la.className, hitInfo.point.x, hitInfo.point.y, hitInfo.point.z);
+                Prediction p = new Prediction(la.className, closerPos.x, closerPos.y, closerPos.z);
                 fp.predictions.Add(p);
             }
         }

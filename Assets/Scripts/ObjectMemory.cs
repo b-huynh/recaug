@@ -12,6 +12,7 @@ public class ObjectMemory {
 		public int pointCount = 0;
 		public int numFramesPassed = 0;
 		public string label;
+		public List<string> altLabels;
 		public Vector3 position;
 		public ObjectCandidate(string label, Vector3 position) {
 			this.label = label;
@@ -29,10 +30,18 @@ public class ObjectMemory {
 			bool matchFound = false;
 			// Attempt to match valid objects first
 			foreach(GameObject cp in convergedPoints) {
-				if (Vector3.Distance(cp.transform.position, p.position) <= distThresh &&
-					cp.GetComponentInChildren<TextMesh>().text == p.label) {
-					matchFound = true;
+				if (Vector3.Distance(cp.transform.position, p.position) <= distThresh) {
+					RegisteredObject reg = cp.GetComponent<RegisteredObject>();
+					if (reg.ContainsLabel(p.label)) {
+						matchFound = true;
+					} else {
+						reg.AddAltLabel(p.label);
+					}
 					break;
+					// if (cp.GetComponentInChildren<TextMesh>().text == p.label) {
+					// 	matchFound = true;
+					// 	break;
+					// }
 				}
 			}
 			if (matchFound)
@@ -45,12 +54,15 @@ public class ObjectMemory {
 					oc.position = (oc.position + p.position) / 2.0f;
 					oc.pointCount++;
 					if (oc.pointCount >= countThresh) {
+						// Create new RegisteredObject
 						GameObject newValidObj = GameObject.Instantiate(pointPrefab);
 						newValidObj.transform.position = oc.position;
-						newValidObj.GetComponentInChildren<TextMesh>().text = oc.label;
+						// newValidObj.GetComponentInChildren<TextMesh>().text = oc.label;
+						newValidObj.GetComponent<RegisteredObject>().AddAltLabel(oc.label);
 						newValidObj.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
 						newValidObj.SetActive(displayPointPrefab);
 						convergedPoints.Add(newValidObj);
+                        Debug.Log("Converged Label: " + newValidObj.GetComponent<RegisteredObject>().label);
 					}
 					break;
 				}

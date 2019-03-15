@@ -18,7 +18,7 @@ using Windows.Web.Http;
 
 [System.Serializable]
 public class ConfigParameters {
-	public string ServerIP = "192.168.2.251";
+	public string ServerIP = "192.168.2.134";
 }
 
 public static class Config {

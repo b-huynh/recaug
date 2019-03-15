@@ -13,7 +13,7 @@ using System.Net;
 
 public class DebugLogBroadcaster : MonoBehaviour 
 {
-	private string debugServerIP = "192.168.2.251";
+	private string debugServerIP = "192.168.2.134";
 	private string broadcastPort = "9999";
 
     private UdpClientUWP udpClient = null;
