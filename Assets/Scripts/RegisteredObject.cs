@@ -15,21 +15,27 @@ public class RegisteredObject : MonoBehaviour {
 	private List<TextMesh> altTextObjs;
 	private int maxAltLabels;
 	
+	Translator translator;
+
+	bool isLabelSet = false;
 
 	void Awake () {
 		altLabels = new List<string>();
 
-		altTextLeft.gameObject.SetActive(false);
 		altTextRight.gameObject.SetActive(false);
+		altTextLeft.gameObject.SetActive(false);
 		altTextTop.gameObject.SetActive(false);
 		altTextBottom.gameObject.SetActive(false);
 
 		altTextObjs = new List<TextMesh>();
-		altTextObjs.Add(altTextLeft);
 		altTextObjs.Add(altTextRight);
+		altTextObjs.Add(altTextLeft);
 		altTextObjs.Add(altTextTop);
 		altTextObjs.Add(altTextBottom);
 		maxAltLabels = altTextObjs.Count;
+
+		translator = new Translator();
+		translator.Init(Translator.TargetLanguage.Spanish);
 	}
 
     void Start() {
@@ -51,7 +57,24 @@ public class RegisteredObject : MonoBehaviour {
 		label = altLabels[id];
 	}
 
+	public void SwitchLabel(string l) {
+		label = l;
+
+		// Remove all other labels except altTextRight now
+		altTextRight.GetComponent<TextMesh>().text = translator.translate(l, Translator.TargetLanguage.Spanish);
+
+		altTextLeft.gameObject.SetActive(false);
+		altTextTop.gameObject.SetActive(false);
+		altTextBottom.gameObject.SetActive(false);
+
+		isLabelSet = true;
+	}
+
 	public void AddAltLabel(string l) {
+		if (isLabelSet) {
+			return;
+		}
+
 		if (altLabels.Count < maxAltLabels) {
 			altLabels.Add(l);
 			if (altLabels.Count == 1) {
