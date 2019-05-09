@@ -14,8 +14,6 @@ public class RegisteredObject : MonoBehaviour {
 
 	private List<TextMesh> altTextObjs;
 	private int maxAltLabels;
-	
-	Translator translator;
 
 	bool isLabelSet = false;
 
@@ -33,9 +31,6 @@ public class RegisteredObject : MonoBehaviour {
 		altTextObjs.Add(altTextTop);
 		altTextObjs.Add(altTextBottom);
 		maxAltLabels = altTextObjs.Count;
-
-		translator = new Translator();
-		translator.Init(Translator.TargetLanguage.Spanish);
 	}
 
     void Start() {
@@ -61,13 +56,17 @@ public class RegisteredObject : MonoBehaviour {
 		label = l;
 
 		// Remove all other labels except altTextRight now
-		altTextRight.GetComponent<TextMesh>().text = translator.translate(l, Translator.TargetLanguage.Spanish);
+		altTextRight.GetComponent<TextMesh>().text = Translator.translate(l, Translator.TargetLanguage.Japanese);
 
 		altTextLeft.gameObject.SetActive(false);
 		altTextTop.gameObject.SetActive(false);
 		altTextBottom.gameObject.SetActive(false);
 
 		isLabelSet = true;
+	}
+
+	public void SwitchLabel(Annotation.Orientation orientation) {
+		
 	}
 
 	public void AddAltLabel(string l) {

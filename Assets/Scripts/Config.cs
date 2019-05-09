@@ -21,6 +21,12 @@ public class ConfigParameters {
 	public string ServerIP = "192.168.2.134";
 }
 
+[System.Serializable]
+public class UIParams {
+	public float ConfirmTimeout = 20.0f; // Seconds. No confirmation timeout.
+	public float FocusConfirmTime = 3.0f; // Seconds. Focus time to select.
+}
+
 public static class Config {
 	public static string ORSendPort = "11000";
 	public static string ORListenPort = "12000";
@@ -29,6 +35,7 @@ public static class Config {
 	public static string CurrentFileName = "default_config.json";
 	public static string CurrentFilePath = null;
 	public static ConfigParameters Params { get; private set; } = new ConfigParameters();
+	public static UIParams UIParams { get; private set; } = new UIParams();
 	public static void LoadConfig(string filename) {
 		CurrentFileName = filename;
 		CurrentFilePath = Path.Combine(Application.persistentDataPath, CurrentFileName); 

@@ -57,8 +57,8 @@ public class SlidingWindowWPFilter : WPFilter {
 	private List<ObjectCandidate> candidates = new List<ObjectCandidate>();
 	private List<GameObject> convergedPoints = new List<GameObject>();
 
-    public SlidingWindowWPFilter(ObjectMemory omem, int window = 120, int count = 5, 
-        float mindist = 0.2f)
+    public SlidingWindowWPFilter(ObjectMemory omem, int window = 120,
+        int count = 5, float mindist = 0.2f)
     : base(omem) {
         this.window = window;
         this.count = count;
