@@ -18,6 +18,7 @@ public class EyeCalibrationMessage
     public Vector3 calibrationPoint = new Vector3();
     public Vector3 rightGazePoint = new Vector3();
     public Vector3 leftGazePoint = new Vector3();
+    public Vector3 stereoGazePoint = new Vector3();
 
     byte[] data = new byte[bufSize];
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using HoloToolkit.Unity;
+using HoloToolkit.Unity.SpatialMapping;
 using UnityEngine;
 
 enum InspectorTab { CONFIG, LOG }
@@ -67,10 +68,12 @@ public class GameManager : Singleton<GameManager> {
                     Toggle("Streaming", ref WebcamStreaming.Instance.streaming);
                 if (Input.GetKeyDown(KeyCode.D))
                     Toggle("Debug Mode", ref debug);
-                if (Input.GetKeyDown(KeyCode.R))
-                    Toggle("Raw Points Mode", ref HologramManager.Instance.rawPointsMode);
+                // if (Input.GetKeyDown(KeyCode.R))
+                //     Toggle("Raw Points Mode", ref HologramManager.Instance.rawPointsMode);
                 if (Input.GetKeyDown(KeyCode.S))
                     HologramManager.Instance.SaveLog();
+                if (Input.GetKeyDown(KeyCode.V))
+                    SpatialMappingManager.Instance.DrawVisualMeshes = !SpatialMappingManager.Instance.DrawVisualMeshes;
             }
         }
     }
@@ -99,9 +102,9 @@ public class GameManager : Singleton<GameManager> {
         // toDraw += "\n" + new string('_', lineLength) + "\n";
 
         // Draw State Variables
-        toDraw += "[STREAMING] " + WebcamStreaming.Instance.streaming.ToString() + "\n";
-        toDraw += "[RAW POINTS] " + HologramManager.Instance.rawPointsMode.ToString() + "\n";
-        toDraw += "[LOGGING POINTS] " + HologramManager.Instance.isLogging.ToString() + "\n";
+        // toDraw += "[STREAMING] " + WebcamStreaming.Instance.streaming.ToString() + "\n";
+        // toDraw += "[RAW POINTS] " + HologramManager.Instance.rawPointsMode.ToString() + "\n";
+        // toDraw += "[LOGGING POINTS] " + HologramManager.Instance.isLogging.ToString() + "\n";
         // toDraw += "[DEBUG] " + debug.ToString() + "\n";
         
         // Latency

@@ -24,7 +24,7 @@ public class ConfigParameters {
 public static class Config {
 	public static string ORSendPort = "11000";
 	public static string ORListenPort = "12000";
-	public static string EyeTrackingPort = "13000";
+	public static string EyeTrackingPort = "13070";
 	public static string DebugLogPort = "9999";
 	public static string CurrentFileName = "default_config.json";
 	public static string CurrentFilePath = null;

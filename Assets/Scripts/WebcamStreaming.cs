@@ -168,11 +168,13 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
         }
 
         // Convert to unity matrices
-        Matrix4x4 camera2WorldMatrix = LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(camera2WorldBuf);
-        Matrix4x4 projectionMatrix = LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(projectionBuf);
+        Matrix4x4 camera2WorldMatrix = 
+            LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(camera2WorldBuf);
+        Matrix4x4 projectionMatrix =
+            LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(projectionBuf);
 
         // Deserialize predictions
-        Predictions pred = JsonUtility.FromJson<Predictions>(jsonStr);
+        ImagePredictions pred = JsonUtility.FromJson<ImagePredictions>(jsonStr);
 
         if (!firstReceived)
         {
@@ -180,7 +182,8 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
             firstReceived = true;
         }
 
-        HologramManager.Instance.VisualizeObjectLabels(ref camera2WorldMatrix, ref projectionMatrix, pred);
+        HologramManager.Instance.OnPredictionsReceived(
+            ref camera2WorldMatrix, ref projectionMatrix, pred);
     }
     
     private byte[] ConstructFramePacket(byte[] frameData, float[] camera2Transform, float[] projection) {
