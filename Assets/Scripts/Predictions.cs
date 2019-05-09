@@ -43,6 +43,10 @@ public class WorldPredictions {
 	public void Add(WorldPrediction wp) {
 		predictions.Add(wp);
 	}
+
+	public void RemoveAll(HashSet<string> toRemove) {
+		predictions.RemoveAll(item => toRemove.Contains(item.label));
+	}
 }
 
 public class ImageToWorldProjector {

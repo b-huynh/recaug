@@ -6,11 +6,21 @@ using UnityEngine;
 // Filters world predictions to determine where objects are in the scene.
 public abstract class WPFilter {
     protected ObjectMemory omem = null;
+    protected HashSet<string> excludeSet = null;
     public WPFilter(ObjectMemory omem) {
         this.omem = omem;
+        this.excludeSet = new HashSet<string>();
     }
 
-    public virtual void AddPredictions(WorldPredictions fp) {}
+    public virtual void AddPredictions(WorldPredictions wp) {}
+
+    public void ExcludeObjects(IEnumerable<string> toExclude) {
+        excludeSet.UnionWith(toExclude);
+    }
+
+    protected void FilterExcluded(WorldPredictions wp) {
+        wp.RemoveAll(excludeSet);
+    }
 }
 
 // Naive filter assumes all predictions are correct
@@ -21,6 +31,8 @@ public class NaiveWPFilter : WPFilter {
     }
 
     public override void AddPredictions(WorldPredictions wp) {
+        FilterExcluded(wp);
+
         // All predictions are correct
         foreach(WorldPrediction p in wp.predictions) {
             omem.RegisterObject(p.label, p.position);
@@ -54,6 +66,8 @@ public class SlidingWindowWPFilter : WPFilter {
     }
 
     public override void AddPredictions(WorldPredictions wp) {
+        FilterExcluded(wp);
+
 		foreach(WorldPrediction p in wp.predictions) {
 			bool matchFound = false;
 			// Attempt to match valid objects first
