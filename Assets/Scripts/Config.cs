@@ -25,6 +25,8 @@ public class ConfigParameters {
 public class UIParams {
 	public float ConfirmTimeout = 20.0f; // Seconds. No confirmation timeout.
 	public float FocusConfirmTime = 3.0f; // Seconds. Focus time to select.
+	public Translator.TargetLanguage TargetLanguage = 
+		Translator.TargetLanguage.Japanese;
 }
 
 public static class Config {
