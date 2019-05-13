@@ -124,7 +124,7 @@ GameObject:
   - component: {fileID: 9820232}
   - component: {fileID: 9820231}
   m_Layer: 0
-  m_Name: New Text
+  m_Name: HudAnnotation
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -657,6 +657,7 @@ MonoBehaviour:
     m_Bits: 4294967291
   labelPrefab: {fileID: 1212843181779374, guid: a16f25a39a1111442a798ae95db60cf6,
     type: 3}
+  hudAnnotation: {fileID: 9820231}
   isLogging: 0
 --- !u!1 &915779448 stripped
 GameObject:
@@ -674,12 +675,12 @@ GameObject:
   m_Component:
   - component: {fileID: 973659102}
   m_Layer: 0
-  m_Name: ResponseText
+  m_Name: HudOverlay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &973659102
 Transform:
   m_ObjectHideFlags: 0
@@ -687,13 +688,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 973659100}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.8, y: 1.3811426, z: -4.7843914}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.05, y: -2.239, z: 5.2156086}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 9820233}
-  m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_Father: {fileID: 1242196589}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1041116596 stripped
 Transform:
@@ -748,7 +749,7 @@ PrefabInstance:
     - target: {fileID: 114000012698980792, guid: 2ed75ffdf9031c94e8bce4b3d17b9928,
         type: 3}
       propertyPath: TimeBetweenUpdates
-      value: 1
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ed75ffdf9031c94e8bce4b3d17b9928, type: 3}
@@ -800,7 +801,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.75
+  near clip plane: 0.25
   far clip plane: 1000
   field of view: 55
   orthographic: 0
@@ -830,7 +831,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 973659102}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -875,7 +877,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4000013535415816, guid: b2db04283121ca74495c2ee000fb4243, type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4000013535415816, guid: b2db04283121ca74495c2ee000fb4243, type: 3}
       propertyPath: m_LocalScale.x
@@ -956,7 +958,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4000011656901714, guid: 3eddd1c29199313478dd3f912bfab2ab, type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 114742747811649402, guid: 3eddd1c29199313478dd3f912bfab2ab,
         type: 3}
@@ -1232,7 +1234,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2129090238}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.71, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 460003430}
@@ -1242,7 +1244,7 @@ Transform:
   - {fileID: 335084661}
   - {fileID: 602536632}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2129090240
 MonoBehaviour:

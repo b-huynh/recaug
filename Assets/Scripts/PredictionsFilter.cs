@@ -55,7 +55,8 @@ public class SlidingWindowWPFilter : WPFilter {
 		}
 	}
 	private List<ObjectCandidate> candidates = new List<ObjectCandidate>();
-	private List<GameObject> convergedPoints = new List<GameObject>();
+	// private List<GameObject> convergedPoints = new List<GameObject>();
+	private List<string> convergedPoints = new List<string>();
 
     public SlidingWindowWPFilter(ObjectMemory omem, int window = 120,
         int count = 5, float mindist = 0.2f)
@@ -71,12 +72,20 @@ public class SlidingWindowWPFilter : WPFilter {
 		foreach(WorldPrediction p in wp.predictions) {
 			bool matchFound = false;
 			// Attempt to match valid objects first
-			foreach(GameObject cp in convergedPoints) {
-				if (Vector3.Distance(cp.transform.position, p.position) <= mindist) {
-					RegisteredObject reg = cp.GetComponent<RegisteredObject>();
-					if (reg.ContainsLabel(p.label)) {
+			foreach(string label in convergedPoints) {
+				GameObject obj = omem.GetRegisteredObject(label);
+				if (obj == null)
+					continue;
+				if (Vector3.Distance(obj.transform.position, p.position) <= mindist) {
+					RegisteredObject reg = obj.GetComponent<RegisteredObject>();
+					// if (reg.ContainsLabel(p.label)) {
+					// 	matchFound = true;
+					// } else if (!reg.confirmed) {
+					// 	reg.AddAltLabel(p.label);
+					// }
+					if (omem.ContainsObject(p.label)) {
 						matchFound = true;
-					} else {
+					} else if (!reg.confirmed) {
 						reg.AddAltLabel(p.label);
 					}
 					break;
@@ -94,7 +103,8 @@ public class SlidingWindowWPFilter : WPFilter {
 					if (oc.pointCount >= count) {
                         GameObject newObj = omem.RegisterObject(oc.label, oc.position);
                         if (newObj != null) {
-                            convergedPoints.Add(newObj);
+                            // convergedPoints.Add(newObj);
+							convergedPoints.Add(oc.label);
                         }
 					}
 					break;

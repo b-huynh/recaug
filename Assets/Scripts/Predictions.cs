@@ -52,6 +52,7 @@ public class WorldPredictions {
 public class ImageToWorldProjector {
     private LayerMask hitmask;
     private HoloLensCameraStream.Resolution resolution;
+	private HashSet<string> excludeSet;
 	float delta; // Shift point towards user by a small factor
 
 	public ImageToWorldProjector (LayerMask hitmask,
@@ -60,7 +61,12 @@ public class ImageToWorldProjector {
 		this.hitmask = hitmask;
 		this.resolution = resolution;
 		this.delta = delta;
+		excludeSet = new HashSet<string>();
 	}
+
+	public void ExcludeObjects(IEnumerable<string> toExclude) {
+        excludeSet.UnionWith(toExclude);
+    }
 
 	public bool ToWorldPoint(ref Matrix4x4 camera2World,
 		ref Matrix4x4 projection, Vector2 imgPoint, out Vector3 worldPoint)
@@ -85,6 +91,9 @@ public class ImageToWorldProjector {
 		string ts = System.DateTime.Now.Ticks.ToString();
 		WorldPredictions worldPreds = new WorldPredictions(ts);
 		foreach(ImagePrediction p in imgPreds.labels) {
+			if (excludeSet.Contains(p.className)) {
+				continue;
+			}
 			Vector2 imgPoint = new Vector2(p.xcen, p.ycen);
 			Vector3 worldPoint;
 			bool hasWorldPoint = ToWorldPoint(ref camera2World, ref projection,

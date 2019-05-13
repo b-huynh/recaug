@@ -18,7 +18,7 @@ public class ObjectMemory {
 	}
 
 	public GameObject RegisterObject(string name, Vector3 position) {
-		if (mode == Modes.FIRST_IN && objects.ContainsKey(name)) {
+		if (mode == Modes.FIRST_IN && ContainsObject(name)) {
 			// Object already registered
 			return null;
 		}
@@ -26,7 +26,7 @@ public class ObjectMemory {
 		// Create new RegisteredObject
 		GameObject newObj = GameObject.Instantiate(objectPrefab);
 		newObj.transform.position = position;
-		newObj.GetComponent<RegisteredObject>().AddAltLabel(name);
+		newObj.GetComponent<RegisteredObject>().Init(name);
 		newObj.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
 		newObj.SetActive(isActive);
 		
@@ -38,6 +38,29 @@ public class ObjectMemory {
 		isActive = val;
 		foreach(var obj in objects) {
 			obj.Value.SetActive(isActive);
+		}
+	}
+
+	public bool ContainsObject(string classname) {
+		return objects.ContainsKey(classname);
+	}
+
+	public GameObject GetRegisteredObject(string classname) {
+		return ContainsObject(classname) ? objects[classname] : null;
+	}
+
+	public GameObject GetConfirmedObject(string classname) {
+		GameObject obj = GetRegisteredObject(classname);
+		if (obj != null) {
+			return obj.GetComponent<RegisteredObject>().confirmed ? obj : null;
+		}
+		return null;
+	}
+
+	public void RemoveObject(string classname) {
+		GameObject obj = GetRegisteredObject(classname);
+		if (obj != null) {
+			GameObject.Destroy(obj);
 		}
 	}
 

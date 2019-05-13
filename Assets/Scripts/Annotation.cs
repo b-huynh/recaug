@@ -12,7 +12,7 @@ public class Annotation : MonoBehaviour, IFocusable {
 
 	// The Registered Object this annotation belongs to
 	public RegisteredObject registeredObject = null;
-	private TextMesh textMesh = null;
+	public TextMesh textMesh = null;
 
 	// Gaze Interaction
 	private bool isFocusedOn = false;
@@ -31,16 +31,15 @@ public class Annotation : MonoBehaviour, IFocusable {
 
 	// Use this for initialization
 	void Start () {
-		// RegisteredObject registeredObject = 
-		// 	transform.parent.gameObject.GetComponent<RegisteredObject>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (isFocusedOn) {
+		if (isFocusable && isFocusedOn) {
 			focusConfirmTimer -= Time.deltaTime;
 			if (focusConfirmTimer <= 0.0f) {
 				// Confirm label of registered object to this one
+				Debug.Log("Trying to confirm: " + text);
 				registeredObject.ConfirmLabel(orientation);
 				isFocusable = false;
 			}

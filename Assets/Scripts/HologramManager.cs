@@ -10,6 +10,7 @@ using File = UnityEngine.Windows.File;
 public class HologramManager : Singleton<HologramManager> {
     public LayerMask hitmasks = Physics.DefaultRaycastLayers;
     public GameObject labelPrefab = null;
+    public TextMesh hudAnnotation = null;
     private HoloLensCameraStream.Resolution resolution;
 
 
@@ -19,6 +20,7 @@ public class HologramManager : Singleton<HologramManager> {
 
 
     private ObjectMemory objMem = null;
+    private ObjectTracker objTracker = null;
     private WPFilter filter = null;
     private ImageToWorldProjector i2wProjector = null;
 
@@ -28,6 +30,7 @@ public class HologramManager : Singleton<HologramManager> {
         resolution = new HoloLensCameraStream.Resolution(896, 504);
 
         objMem = new ObjectMemory(labelPrefab);
+        objTracker = new ObjectTracker(objMem);
 
         filter = new SlidingWindowWPFilter(objMem);
         HashSet<string> toExclude = Config.KnownObjects;
@@ -52,6 +55,15 @@ public class HologramManager : Singleton<HologramManager> {
                     worldPreds.timestamp, wp.label, wp.position.x,
                     wp.position.y, wp.position.z));
             }
+        }
+
+        // Determine if a known object has moved
+        List<string> moved = objTracker.TrackObjects(worldPreds);
+
+        // Remove and transition
+        if (moved.Count > 0) {
+            objMem.RemoveObject(moved[0]);
+            hudAnnotation.text = moved[0];
         }
 
         filter.AddPredictions(worldPreds);
