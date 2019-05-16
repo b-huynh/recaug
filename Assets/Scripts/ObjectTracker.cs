@@ -10,8 +10,8 @@ public class ObjectTracker {
     private int maxCount;
     private Dictionary<string, List<float>> objDiffs;
 
-    public ObjectTracker(ObjectMemory omem, float minDist = 0.5f, 
-        int maxCount = 3) {
+    public ObjectTracker(ObjectMemory omem, float minDist = 0.4f, 
+        int maxCount = 2) {
         this.omem = omem;
         this.minDist = minDist;
         this.maxCount = maxCount;
@@ -35,8 +35,6 @@ public class ObjectTracker {
                     // Object may have moved
                     this.objDiffs[wp.label].Add(dist);
 
-                    Debug.LogFormat("Predicted: {0}", wp.position);
-                    Debug.LogFormat("Confirmed: {0}", currObj.transform.position);
                     string divergences = "[";
                     foreach(float divergence in this.objDiffs[wp.label]) {
                         divergences += divergence.ToString() + ", ";
@@ -44,7 +42,7 @@ public class ObjectTracker {
                     divergences += "]";
                     Debug.LogFormat(" Object Divergence: {0}, {1}", wp.label, divergences);
 
-                    if (this.objDiffs[wp.label].Count > this.maxCount) {
+                    if (this.objDiffs[wp.label].Count >= this.maxCount) {
                         // Object has moved
                         movedObjects.Add(wp.label);
                         this.objDiffs[wp.label].Clear();

@@ -4,13 +4,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using HoloToolkit.Unity;
+using HoloToolkit.Unity.SpatialMapping;
 using UnityEngine;
 using File = UnityEngine.Windows.File;
 
 public class HologramManager : Singleton<HologramManager> {
     public LayerMask hitmasks = Physics.DefaultRaycastLayers;
     public GameObject labelPrefab = null;
-    public TextMesh hudAnnotation = null;
+    public UnityEngine.UI.Text hudAnnotation = null;
+    public string defaultAnnotation = "[]";
+    public SpatialMappingObserver observer = null;
+    public Material debugObjectMaterial = null;
     private HoloLensCameraStream.Resolution resolution;
 
 
@@ -30,7 +34,9 @@ public class HologramManager : Singleton<HologramManager> {
         resolution = new HoloLensCameraStream.Resolution(896, 504);
 
         objMem = new ObjectMemory(labelPrefab);
+        objMem.debugMaterial = debugObjectMaterial;
         objTracker = new ObjectTracker(objMem);
+        // observer.SurfaceRemoved += objMem.OnSurfaceRemoved;
 
         filter = new SlidingWindowWPFilter(objMem);
         HashSet<string> toExclude = Config.KnownObjects;
@@ -38,6 +44,8 @@ public class HologramManager : Singleton<HologramManager> {
         filter.ExcludeObjects(toExclude);
 
         i2wProjector = new ImageToWorldProjector(hitmasks, resolution);
+        
+        hudAnnotation.text = defaultAnnotation;
     }
 
 	public void Update() {
@@ -57,12 +65,12 @@ public class HologramManager : Singleton<HologramManager> {
             }
         }
 
-        // Determine if a known object has moved
+        // // Determine if a known object has moved
         List<string> moved = objTracker.TrackObjects(worldPreds);
 
         // Remove and transition
         if (moved.Count > 0) {
-            objMem.RemoveObject(moved[0]);
+            objMem.DisableObject(moved[0]);
             hudAnnotation.text = moved[0];
         }
 
@@ -78,4 +86,9 @@ public class HologramManager : Singleton<HologramManager> {
         File.WriteAllBytes(path, Encoding.UTF8.GetBytes(log_string));
         Debug.Log("Saved point log to: " + path);
     }
+
+    public void ResetHUD() {
+        hudAnnotation.text = defaultAnnotation;
+    }
+
 }

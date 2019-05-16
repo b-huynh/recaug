@@ -39,7 +39,7 @@ public class Annotation : MonoBehaviour, IFocusable {
 			focusConfirmTimer -= Time.deltaTime;
 			if (focusConfirmTimer <= 0.0f) {
 				// Confirm label of registered object to this one
-				Debug.Log("Trying to confirm: " + text);
+				// Debug.Log("Trying to confirm: " + text);
 				registeredObject.ConfirmLabel(orientation);
 				isFocusable = false;
 			}
@@ -48,7 +48,7 @@ public class Annotation : MonoBehaviour, IFocusable {
 
 	public void OnFocusEnter() {
 		if (isFocusable) {
-			Debug.Log("Entered focus for: " + textMesh.text);
+			// Debug.Log("Entered focus for: " + textMesh.text);
 			textMesh.color = Color.green;
 			isFocusedOn = true;
 			focusConfirmTimer = Config.UIParams.FocusConfirmTime;
@@ -57,7 +57,7 @@ public class Annotation : MonoBehaviour, IFocusable {
 
 	public void OnFocusExit() {
 		if (isFocusable) {
-			Debug.Log("Exited focus for: " + textMesh.text);
+			// Debug.Log("Exited focus for: " + textMesh.text);
 			textMesh.color = Color.white;
 			isFocusedOn = false;
 			focusConfirmTimer = 0.0f;

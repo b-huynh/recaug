@@ -3,21 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+using HoloToolkit.Unity.SpatialMapping;
+
 public class ObjectMemory {
 	public enum Modes { OVERWRITE, FIRST_IN }
 
 	public GameObject objectPrefab = null;
 	private Dictionary<string, GameObject> objects;
+	private int regIDCounter;
 	public bool isActive { get; private set; } = true;
 	public Modes mode { get; private set; }
+
+	// DEBUG
+	public Material debugMaterial = null;
 
 	public ObjectMemory(GameObject objectPrefab, Modes mode = Modes.FIRST_IN) {
 		this.objects = new Dictionary<string, GameObject>();
 		this.objectPrefab = objectPrefab;
 		this.mode = mode;
+		regIDCounter = 0;
 	}
 
-	public GameObject RegisterObject(string name, Vector3 position) {
+	public GameObject RegisterObject(string name, Vector3 position,
+		GameObject worldObject)
+	{
 		if (mode == Modes.FIRST_IN && ContainsObject(name)) {
 			// Object already registered
 			return null;
@@ -26,10 +35,26 @@ public class ObjectMemory {
 		// Create new RegisteredObject
 		GameObject newObj = GameObject.Instantiate(objectPrefab);
 		newObj.transform.position = position;
-		newObj.GetComponent<RegisteredObject>().Init(name);
-		newObj.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
-		newObj.SetActive(isActive);
+
+		RegisteredObject registration = newObj.GetComponent<RegisteredObject>();
+		registration.Init(++regIDCounter, name);
+		registration.UpdateGeometry(position);
+		registration.UpdateGeometry(worldObject);
+
+		Renderer rend = newObj.GetComponent<Renderer>();
+		rend.material.SetColor("_Color", Color.green);
 		
+		// Debug world renderer
+		Debug.LogFormat("Registered GameObject {0}, id: {1}, active: {2}", 
+			worldObject, worldObject.GetInstanceID(), worldObject.activeSelf);
+		// Debug.Log("")
+		// Renderer worldObjectRend = worldObject.GetComponent<Renderer>();
+		// worldObjectRend.sharedMaterial = debugMaterial;
+		// worldObjectRend.material.SetColor("_Color", Color.red);
+		// worldObjectRend.material.SetColor("_BaseColor", Color.red);
+		// worldObjectRend.material.SetColor("_WireColor", Color.blue);
+
+		newObj.SetActive(isActive);
 		objects[name] = newObj;
 		return newObj;
 	}
@@ -58,13 +83,76 @@ public class ObjectMemory {
 	}
 
 	public void RemoveObject(string classname) {
+		Debug.Log("Removing object: " + classname);
 		GameObject obj = GetRegisteredObject(classname);
 		if (obj != null) {
 			GameObject.Destroy(obj);
+			
 		}
+	}
+
+	public void UpdateObject(string classname, string altLabel) {
+		
+	}
+
+	public void DisableObject(string classname) {
+		GameObject obj = GetRegisteredObject(classname);
+		if (obj != null) {
+			obj.SetActive(false);
+		}
+	}
+
+	public void EnableObject(string classname) {
+		GameObject obj = GetRegisteredObject(classname);
+		if (obj != null) {
+			obj.SetActive(true);
+		}
+
+		// Reset HUD (maybe abstract this more...)
+		HologramManager.Instance.ResetHUD();
+	}
+
+	public bool EnabledStatus(string classname) {
+		GameObject obj = GetRegisteredObject(classname);
+		if (obj != null) {
+			return obj.activeSelf;
+		}
+		return false;
 	}
 
 	public void SetMode(Modes mode) {
 		this.mode = mode;
+	}
+
+	public List<KeyValuePair<string, GameObject>> GetNearbyObjects(Vector3 pos,
+		float mindist)
+	{
+		var retval = new List<KeyValuePair<string, GameObject>>();
+		foreach(var kv in objects) {
+			if (Vector3.Distance(kv.Value.transform.position, pos) <= mindist) {
+				retval.Add(kv);
+			}
+		}
+		return retval;
+	}
+
+	public void OnSurfaceRemoved(
+		object sender,
+		DataEventArgs<SpatialMappingSource.SurfaceObject> e)
+	{
+		SpatialMappingSource.SurfaceObject surface = e.Data;
+		
+		foreach(KeyValuePair<string, GameObject> kv in objects) {
+			RegisteredObject reg = kv.Value.GetComponent<RegisteredObject>();
+			if (reg.ContainsGeometry(e.Data.Object)) {
+				// An object we have registered and confirmed is gone.
+				RemoveObject(kv.Key);
+				Debug.LogFormat("Removed GameObject {0}, id: {1}, active: {2}", 
+					e.Data.Object, e.Data.Object.GetInstanceID(),
+					e.Data.Object.activeSelf);
+				break;
+			}
+		}
+		// Check if surface removed is one of our registered objects.
 	}
 }

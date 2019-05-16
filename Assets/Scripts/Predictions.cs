@@ -24,9 +24,11 @@ public class ImagePredictions {
 public class WorldPrediction {
 	public string label;
 	public Vector3 position;
-	public WorldPrediction(string name, Vector3 pos) {
+	public GameObject worldObject;
+	public WorldPrediction(string name, Vector3 pos, GameObject worldObject) {
 		this.label = name;
 		this.position = pos;
+		this.worldObject = worldObject;
 	}
 }
 
@@ -85,6 +87,45 @@ public class ImageToWorldProjector {
 		return isHit;
 	}
 
+	// public WorldPredictions ToWorldPredictions(ref Matrix4x4 camera2World,
+	// 	ref Matrix4x4 projection, ImagePredictions imgPreds)
+	// { 
+	// 	string ts = System.DateTime.Now.Ticks.ToString();
+	// 	WorldPredictions worldPreds = new WorldPredictions(ts);
+	// 	foreach(ImagePrediction p in imgPreds.labels) {
+	// 		if (excludeSet.Contains(p.className)) {
+	// 			continue;
+	// 		}
+	// 		Vector2 imgPoint = new Vector2(p.xcen, p.ycen);
+	// 		Vector3 worldPoint;
+	// 		bool hasWorldPoint = ToWorldPoint(ref camera2World, ref projection,
+	// 			imgPoint, out worldPoint);
+	// 		if (hasWorldPoint) {
+	// 			worldPreds.Add(new WorldPrediction(p.className, worldPoint));
+	// 		}
+	// 	}
+	// 	return worldPreds;
+	// }
+
+	public GameObject ToWorldSurface(ref Matrix4x4 camera2World,
+		ref Matrix4x4 projection, Vector2 imgPoint, out Vector3 worldPoint)
+	{
+		Vector3 from = camera2World.GetColumn(3);
+		Vector3 rayDirection = LocatableCameraUtils.PixelCoordToWorldCoord(
+			camera2World, projection, resolution, imgPoint);
+		RaycastHit hitInfo;
+		bool isHit = Physics.Raycast(from, rayDirection, out hitInfo,
+			Mathf.Infinity, hitmask);
+		worldPoint = new Vector3();
+		GameObject res = null;
+		if (isHit) {
+			Vector3 towardsUser = (Camera.main.transform.position - hitInfo.point).normalized;
+			worldPoint = hitInfo.point + (towardsUser * delta);
+			res = hitInfo.collider.gameObject;
+		}
+		return res;
+	}
+
 	public WorldPredictions ToWorldPredictions(ref Matrix4x4 camera2World,
 		ref Matrix4x4 projection, ImagePredictions imgPreds)
 	{ 
@@ -96,10 +137,11 @@ public class ImageToWorldProjector {
 			}
 			Vector2 imgPoint = new Vector2(p.xcen, p.ycen);
 			Vector3 worldPoint;
-			bool hasWorldPoint = ToWorldPoint(ref camera2World, ref projection,
-				imgPoint, out worldPoint);
-			if (hasWorldPoint) {
-				worldPreds.Add(new WorldPrediction(p.className, worldPoint));
+			GameObject worldObject = ToWorldSurface(ref camera2World,
+				ref projection, imgPoint, out worldPoint);
+			if (worldObject != null) {
+				worldPreds.Add(new WorldPrediction(p.className, worldPoint, 
+					worldObject));
 			}
 		}
 		return worldPreds;

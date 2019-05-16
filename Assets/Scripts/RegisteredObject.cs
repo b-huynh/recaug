@@ -4,15 +4,25 @@ using System.Linq;
 using UnityEngine;
 
 public class RegisteredObject : MonoBehaviour {
+	public int ID;
 	public List<Annotation> annotations;
-	private Dictionary<Annotation.Orientation, Annotation> assignMap;  
+	private Dictionary<Annotation.Orientation, Annotation> assignMap;
+
+	// Defines the geometry of this object...
+	private struct Geometry {
+		public List<Vector3> points;
+		public List<GameObject> worldObjects;
+	}
+	private Geometry geometry;
 
 	public bool confirmed { get; private set; }
-
 	public string label { get; private set; }
 
 	void Awake () {
 		assignMap = new Dictionary<Annotation.Orientation, Annotation>();
+		geometry = new Geometry();
+		geometry.points = new List<Vector3>();
+		geometry.worldObjects = new List<GameObject>();
 	}
 
     void Start() {
@@ -33,8 +43,6 @@ public class RegisteredObject : MonoBehaviour {
 	}
 
 	public void ConfirmLabel(Annotation.Orientation orientation) {
-		Debug.Log("Received orientation: " + orientation.ToString());
-
 		// Swap with right annotation
 		if (orientation != Annotation.Orientation.RIGHT) {
 			string temp = assignMap[orientation].text;
@@ -59,7 +67,8 @@ public class RegisteredObject : MonoBehaviour {
 		confirmed = true;
 	}
 
-	public void Init(string label) {
+	public void Init(int ID, string label) {
+		this.ID = ID;
 		AddAltLabel(label);
 	}
 
@@ -72,4 +81,19 @@ public class RegisteredObject : MonoBehaviour {
 			annotations.RemoveAt(0);
 		}
 	}
+
+	public void UpdateGeometry(Vector3 point) {
+		geometry.points.Add(point);
+	}
+
+	public void UpdateGeometry(GameObject worldObject) {
+		geometry.worldObjects.Add(worldObject);
+	}
+
+	public bool ContainsGeometry(GameObject toCompare) {
+		int toCompareID = toCompare.GetInstanceID();
+		return geometry.worldObjects.Any(
+			geo => geo.gameObject.GetInstanceID() == toCompareID); 
+	}
+
 }
