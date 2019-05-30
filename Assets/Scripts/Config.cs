@@ -3,182 +3,240 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using HoloToolkit.Unity;
 using UnityEngine;
 using UnityEngine.Events;
 using File = UnityEngine.Windows.File;
 
-#if !UNITY_EDITOR
+#if WINDOWS_UWP
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.Web.Http;
+using Windows.Web.Http.Filters;
 #endif
 
 
 [System.Serializable]
-public class ConfigParameters {
-	public string ServerIP = "192.168.2.134";
+public class SystemParams {
+    public string ServerIP = "192.168.2.251";
+    public string ClientIP = "192.168.2.238";
+    public string ObjectTrackingPort = "12000";
+	public string EyeTrackingPort = "13000";
+	public string DebugLogPort = "9999";
+    public float ConfidenceThreshold = 0.0f;
 }
 
 [System.Serializable]
 public class UIParams {
 	public float ConfirmTimeout = 20.0f; // Seconds. No confirmation timeout.
 	public float FocusConfirmTime = 1.5f; // Seconds. Focus time to select.
-	public Translator.TargetLanguage TargetLanguage = 
-		Translator.TargetLanguage.Japanese;
+}
+
+[System.Serializable]
+public class ExperimentParams : ISerializationCallbackReceiver {
+    public Translator.TargetLanguage TargetLanguage;
+    public HashSet<string> KnownObjects = new HashSet<string>();
+    public HashSet<string> ValidObjects = new HashSet<string>();
+
+	// INTERNAL IMPLEMENTATION. DO NOT USE.
+	// Serializable types to convert to above member variables.
+	public string _targetLanguage = "English";
+    public List<string> _knownObjects = new List<string>();
+    public List<string> _validObjects = new List<string>();
+
+    public void OnBeforeSerialize() {
+		_targetLanguage = TargetLanguage.ToString();
+        _knownObjects = new List<string>(KnownObjects);
+        _validObjects = new List<string>(ValidObjects);
+    }
+
+    public void OnAfterDeserialize() {
+		TargetLanguage = (Translator.TargetLanguage)System.Enum.Parse(
+			typeof(Translator.TargetLanguage), _targetLanguage);
+        KnownObjects = new HashSet<string>(_knownObjects);
+        ValidObjects = new HashSet<string>(_validObjects);
+    }
+}
+
+[System.Serializable]
+public class ConfigParams {
+	public SystemParams System = new SystemParams();
+	public UIParams UI = new UIParams();
+	public ExperimentParams Experiment = new ExperimentParams();
 }
 
 public static class Config {
-	public static string ORSendPort = "11000";
-	public static string ORListenPort = "12000";
-	public static string EyeTrackingPort = "13070";
-	public static string DebugLogPort = "9999";
-	public static string CurrentFileName = "default_config.json";
-	public static string CurrentFilePath = null;
-	public static ConfigParameters Params { get; private set; } = new ConfigParameters();
-	public static UIParams UIParams { get; private set; } = new UIParams();
-	public static void LoadConfig(string filename) {
-		CurrentFileName = filename;
-		CurrentFilePath = Path.Combine(Application.persistentDataPath, CurrentFileName); 
+    public static bool Loaded = false;
+    public static ConfigParams Params = new ConfigParams();
+    public static SystemParams System {
+        get { return Params.System; }
+        private set {}
+    }
+    public static UIParams UI {
+        get { return Params.UI; }
+        private set {}
+    }
+    public static ExperimentParams Experiment {
+        get { return Params.Experiment; }
+        private set {}
+    }
 
-		// Check if file exists, create if it doesn't
-		if (File.Exists(CurrentFilePath)) {
-			string configJson = Encoding.UTF8.GetString(File.ReadAllBytes(CurrentFilePath));
-			Params = JsonUtility.FromJson<ConfigParameters>(configJson);
-			Debug.Log("Loaded config file.");
-		} else {
-			Debug.Log("No config file found, creating with default params.");
-			WriteConfig();
-		}
+	public static void LoadHTTP(string url) {
+#if WINDOWS_UWP
+        // Set non-caching behavior
+        HttpBaseProtocolFilter filter = new HttpBaseProtocolFilter();
+        filter.CacheControl.ReadBehavior = HttpCacheReadBehavior.NoCache;
+        filter.CacheControl.WriteBehavior = HttpCacheWriteBehavior.NoCache;
+        HttpClient httpClient = new HttpClient(filter);
+
+        Uri requestUri = new Uri(url);
+        HttpResponseMessage httpResponse = new HttpResponseMessage();
+        string httpResponseBody = "";
+        try {
+            //Send the GET request
+            httpResponse = httpClient.GetAsync(requestUri).GetAwaiter().GetResult();
+            httpResponse.EnsureSuccessStatusCode();
+            httpResponseBody = httpResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            LoadJson(httpResponseBody);
+        }
+        catch (Exception ex) {
+            httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
+            Debug.Log(httpResponseBody);
+        }
+#else
+        Debug.Log("[Config] LoadHTTP not implemented.");
+#endif
 	}
 
-	public static void UpdateConfig(string key, string value) {
-		Debug.LogFormat("CONFIG RECEIVED: {0} : {1}", key, value);
-		switch(key) {
-			case "ServerIP":
-				Params.ServerIP = value;
-				break;
-			default:
-				Debug.LogFormat("[Config] WARNING: Param '{0}' does not exist", key);
-				break;
-		}
-		WriteConfig();
-	}
+  
+    public static void LoadPersistantDataPathFile(string filename) {
+		string filepath = Path.Combine(Application.persistentDataPath, filename);
+        LoadFile(filepath);
+    }
 
-	private static void WriteConfig() {
-		File.WriteAllBytes(CurrentFilePath, Encoding.UTF8.GetBytes(JsonUtility.ToJson(Params)));
-	}
+    public static void LoadFile(string filepath) {
+        string json = Encoding.UTF8.GetString(File.ReadAllBytes(filepath));
+        LoadJson(json);
+    }
 
-	public static HashSet<string> KnownObjects = new HashSet<string> {
-		"backpack",
-		"umbrella",
-		"handbag",
-		"tie",
-		"frisbee",
-		"sports ball",
-		"baseball bat",
-		"baseball glove",
-		"skateboard",
-		"tennis racket",
-		"bottle",
-		"wine glass",
-		"cup",
-		"fork",
-		"knife",
-		"spoon",
-		"bowl",
-		"mouse",
-		"remote",
-		"keyboard",
-		"cell phone",
-		"book",
-		"clock",
-		"vase",
-		"scissors",
-		"teddy bear",
-		"hair drier",
-		"toothbrush",
-		"suitcase",
-		"banana",
-		"apple",
-		"sandwich",
-		"orange",
-		"broccoli",
-		"carrot",
-		"hot dog",
-		"pizza",
-		"donut",
-		"microwave",
-		"airplane",
-		"bus",
-		"train",
-		"truck",
-		"boat",
-		"bird",
-		"cat",
-		"dog",
-		"horse",
-		"sheep",
-		"cow",
-		"elephant",
-		"bear",
-		"zebra",
-		"giraffe",
-		"kite",
-		"cake",
-		"laptop",
-		"toaster",
-		"potted plant",
-		"tv",
-		"bicycle",
-		"car",
-		"motorcycle",
-		"stop sign",
-		"chair",
-		"oven",
-		"person",
-		"traffic light",
-		"fire hydrant",
-		"parking meter",
-		"bench",
-		"skis",
-		"snowboard",
-		"surfboard",
-		"couch",
-		"bed",
-		"dining table",
-		"toilet",
-		"sink",
-		"refrigerator",
-	};
+    public static void LoadJson(string json) {
+        Params = JsonUtility.FromJson<ConfigParams>(json);
+        Loaded = true;
+    }
 
-	public static HashSet<string> GoodObjects = new HashSet<string> {
-		"backpack",
-		"umbrella",
-		"handbag",
-		"sports ball",
-		"tennis racket",
-		"bottle",
-		"wine glass",
-		"cup",
-		"fork",
-		"knife",
-		"spoon",
-		"bowl",
-		"mouse",
-		"remote",
-		"keyboard",
-		"cell phone",
-		"book",
-		"scissors",
-		"toothbrush",
-		// "banana",
-		// "apple",
-		// "orange",
-		// "broccoli",
-		// "carrot",
-		"laptop",
-		"tv",
-	};
+    public static string ToJson() {
+       return JsonUtility.ToJson(Params, true); 
+    }
 }
+
+// public HashSet<string> KnownObjects = new HashSet<string> {
+// 	"backpack",
+// 	"umbrella",
+// 	"handbag",
+// 	"tie",
+// 	"frisbee",
+// 	"sports ball",
+// 	"baseball bat",
+// 	"baseball glove",
+// 	"skateboard",
+// 	"tennis racket",
+// 	"bottle",
+// 	"wine glass",
+// 	"cup",
+// 	"fork",
+// 	"knife",
+// 	"spoon",
+// 	"bowl",
+// 	"mouse",
+// 	"remote",
+// 	"keyboard",
+// 	"cell phone",
+// 	"book",
+// 	"clock",
+// 	"vase",
+// 	"scissors",
+// 	"teddy bear",
+// 	"hair drier",
+// 	"toothbrush",
+// 	"suitcase",
+// 	"banana",
+// 	"apple",
+// 	"sandwich",
+// 	"orange",
+// 	"broccoli",
+// 	"carrot",
+// 	"hot dog",
+// 	"pizza",
+// 	"donut",
+// 	"microwave",
+// 	"airplane",
+// 	"bus",
+// 	"train",
+// 	"truck",
+// 	"boat",
+// 	"bird",
+// 	"cat",
+// 	"dog",
+// 	"horse",
+// 	"sheep",
+// 	"cow",
+// 	"elephant",
+// 	"bear",
+// 	"zebra",
+// 	"giraffe",
+// 	"kite",
+// 	"cake",
+// 	"laptop",
+// 	"toaster",
+// 	"potted plant",
+// 	"tv",
+// 	"bicycle",
+// 	"car",
+// 	"motorcycle",
+// 	"stop sign",
+// 	"chair",
+// 	"oven",
+// 	"person",
+// 	"traffic light",
+// 	"fire hydrant",
+// 	"parking meter",
+// 	"bench",
+// 	"skis",
+// 	"snowboard",
+// 	"surfboard",
+// 	"couch",
+// 	"bed",
+// 	"dining table",
+// 	"toilet",
+// 	"sink",
+// 	"refrigerator",
+// };
+
+// public HashSet<string> GoodObjects = new HashSet<string> {
+// 	"backpack",
+// 	"umbrella",
+// 	"handbag",
+// 	"sports ball",
+// 	"tennis racket",
+// 	"bottle",
+// 	"wine glass",
+// 	"cup",
+// 	"fork",
+// 	"knife",
+// 	"spoon",
+// 	"bowl",
+// 	"mouse",
+// 	"remote",
+// 	"keyboard",
+// 	"cell phone",
+// 	"book",
+// 	"scissors",
+// 	"toothbrush",
+// 	// "banana",
+// 	// "apple",
+// 	// "orange",
+// 	// "broccoli",
+// 	// "carrot",
+// 	"laptop",
+// 	"tv",
+// };

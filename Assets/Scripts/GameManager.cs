@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using HoloToolkit.Unity;
 using HoloToolkit.Unity.SpatialMapping;
 using UnityEngine;
@@ -21,12 +22,14 @@ public class GameManager : Singleton<GameManager> {
 
     private int firstFrameLatency = 0; // Should be milliseconds
 
+    private string configURL = "http://192.168.2.134:8080/config.json";
 
-    // config stuff
-    private string configFileName = "config.json";
+    protected override void Awake() {
+        base.Awake();
+        Config.LoadHTTP(configURL);
+    }
 
-    void Start() {
-        Config.LoadConfig(configFileName);        
+    public void Start() {
     }
 
     void Update() {
@@ -82,7 +85,7 @@ public class GameManager : Singleton<GameManager> {
         string[] tokens = command.Split();
         switch(tokens[0]) {
             case "setip":
-                Config.UpdateConfig("ServerIP", tokens[1]);
+                // Config.UpdateConfig("ServerIP", tokens[1]);
                 break;
         }
     }

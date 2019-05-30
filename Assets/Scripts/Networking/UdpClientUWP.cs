@@ -40,7 +40,8 @@ public class UdpClientUWP {
 	public async void BindAny(string port) {
 		try {
 			await listener.BindEndpointAsync(null, port);
-			Debug.LogFormat("[UdpClientUWP] Bind on {0}:{1}", listener.Information.LocalAddress,
+			Debug.LogFormat("[UdpClientUWP] Bind on {0}:{1}",
+                listener.Information.LocalAddress,
 				listener.Information.LocalPort);
 		} catch (Exception e) {
 			Debug.Log(e.ToString());
@@ -48,20 +49,27 @@ public class UdpClientUWP {
 		}
 	}
 
-	private void MessageReceivedCallback(DatagramSocket sender, DatagramSocketMessageReceivedEventArgs args) {
+	private void MessageReceivedCallback(DatagramSocket sender,
+        DatagramSocketMessageReceivedEventArgs args)
+    {
         Stream streamIn = args.GetDataStream().AsStreamForRead();
         MemoryStream ms = ToMemoryStream(streamIn);
         byte[] msgData = ms.ToArray();
 		
         ThreadUtils.Instance.InvokeOnMainThread(() => {
-			messageReceivedEvent.Invoke(args.RemoteAddress.DisplayName, listener.Information.LocalPort, msgData);
+			messageReceivedEvent.Invoke(args.RemoteAddress.DisplayName,
+                listener.Information.LocalPort, msgData);
         });
 	}
 
-    private async Task SendBytesAsync(byte[] data, string sendIP, string sendPort) {
+    private async Task SendBytesAsync(byte[] data, string sendIP,
+        string sendPort)
+    {
 		HostName receiverName = new HostName(sendIP);
 		string receiverPort = sendPort;
-        using (var stream = await listener.GetOutputStreamAsync(receiverName, receiverPort)) {
+        using (var stream =
+            await listener.GetOutputStreamAsync(receiverName, receiverPort))
+        {
             using (var writer = new DataWriter(stream)) {
                 writer.WriteBytes(data);
                 await writer.StoreAsync();
@@ -88,9 +96,5 @@ public class UdpClientUWP {
         }
         finally { }
     }
-	
-// #else
-// 	void Start () { Debug.LogWarning("[UdpClientUWP] Not implemented in Unity Editor!"); }
-// 	void Update () {}
 #endif
 }

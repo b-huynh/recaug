@@ -36,11 +36,12 @@ public class HologramManager : Singleton<HologramManager> {
         objMem = new ObjectMemory(labelPrefab);
         objMem.debugMaterial = debugObjectMaterial;
         objTracker = new ObjectTracker(objMem);
-        // observer.SurfaceRemoved += objMem.OnSurfaceRemoved;
+
+        Debug.Log("Configured: " + Config.Loaded.ToString());
 
         filter = new SlidingWindowWPFilter(objMem);
-        HashSet<string> toExclude = Config.KnownObjects;
-        toExclude.ExceptWith(Config.GoodObjects);
+        HashSet<string> toExclude = Config.Experiment.KnownObjects;
+        toExclude.ExceptWith(Config.Experiment.ValidObjects);
         filter.ExcludeObjects(toExclude);
 
         i2wProjector = new ImageToWorldProjector(hitmasks, resolution);
@@ -66,12 +67,15 @@ public class HologramManager : Singleton<HologramManager> {
         }
 
         // // Determine if a known object has moved
-        List<string> moved = objTracker.TrackObjects(worldPreds);
+        Dictionary<string, Vector3> moved = objTracker.TrackObjects(worldPreds);
 
         // Remove and transition
-        if (moved.Count > 0) {
-            objMem.DisableObject(moved[0]);
-            hudAnnotation.text = moved[0];
+        // if (moved.Count > 0) {
+        //     objMem.DisableObject(moved[0]);
+        //     hudAnnotation.text = moved[0];
+        // }
+        foreach(var kv in moved) {
+            objMem.MoveObject(kv.Key, kv.Value);
         }
 
         filter.AddPredictions(worldPreds);

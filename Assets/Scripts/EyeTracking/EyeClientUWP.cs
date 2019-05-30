@@ -42,16 +42,15 @@ public class EyeClientUWP : Singleton<EyeClientUWP> {
         stereoGazePointObj.transform.SetParent(cameraHead.transform);
         stereoGazePointObj.transform.position = cameraHead.transform.forward;
         stereoGazePointObj.transform.localScale = new Vector3(0.025f, 0.025f, 0.025f);
-       stereoGazePointObj.SetActive(useEyeCursor);
+        stereoGazePointObj.SetActive(useEyeCursor);
 
         cursor.SetActive(!useEyeCursor);
         // cursor.transform.SetParent(cameraHead.transform);
         // cursor.GetComponent<ObjectCursor>().ParentTransform = cameraHead.transform;
 
-
         udpClient = new UdpClientUWP();
         udpClient.messageReceivedEvent.AddListener(OnUdpMessageReceived);
-        udpClient.BindAny("12099");
+        udpClient.BindAny(Config.System.EyeTrackingPort);
     }
 
 	// Update is called once per frame
@@ -122,10 +121,10 @@ public class EyeClientUWP : Singleton<EyeClientUWP> {
 
     public async void ConnectToServer() {
         try {
-            Debug.LogFormat("[EyeClientUWP] Attempt connect to {0}:{1}", Config.Params.ServerIP, Config.EyeTrackingPort);
-            HostName serverHost = new HostName(Config.Params.ServerIP);
+            Debug.LogFormat("[EyeClientUWP] Attempt connect to {0}:{1}", Config.System.ServerIP, Config.System.EyeTrackingPort);
+            HostName serverHost = new HostName(Config.System.ServerIP);
             connection = new StreamSocket();
-            await connection.ConnectAsync(serverHost, Config.EyeTrackingPort);
+            await connection.ConnectAsync(serverHost, Config.System.EyeTrackingPort);
             Debug.Log("[EyeClientUWP] Connected");
             connected = true;
         } catch (Exception ex) {

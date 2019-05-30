@@ -51,7 +51,7 @@ public class Annotation : MonoBehaviour, IFocusable {
 			// Debug.Log("Entered focus for: " + textMesh.text);
 			textMesh.color = Color.green;
 			isFocusedOn = true;
-			focusConfirmTimer = Config.UIParams.FocusConfirmTime;
+			focusConfirmTimer = Config.UI.FocusConfirmTime;
 		}
 	}
 

@@ -18,6 +18,11 @@ public class RegisteredObject : MonoBehaviour {
 	public bool confirmed { get; private set; }
 	public string label { get; private set; }
 
+	public Vector3 position { 
+		get { return transform.position; }
+		private set {}
+	}
+
 	void Awake () {
 		assignMap = new Dictionary<Annotation.Orientation, Annotation>();
 		geometry = new Geometry();
@@ -56,7 +61,7 @@ public class RegisteredObject : MonoBehaviour {
 		
 		// Translate and hide others
 		assignMap[Annotation.Orientation.RIGHT].text =
-			Translator.translate(label, Config.UIParams.TargetLanguage);
+			Translator.Translate(label, Config.Experiment.TargetLanguage);
 
 		foreach(var kv in assignMap) {
 			if (kv.Key != Annotation.Orientation.RIGHT) {
@@ -84,10 +89,18 @@ public class RegisteredObject : MonoBehaviour {
 
 	public void UpdateGeometry(Vector3 point) {
 		geometry.points.Add(point);
+		DeterminePose();
 	}
 
 	public void UpdateGeometry(GameObject worldObject) {
 		geometry.worldObjects.Add(worldObject);
+		DeterminePose();
+	}
+
+	public void ClearGeometry() {
+		geometry.points.Clear();
+		geometry.worldObjects.Clear();
+		DeterminePose();
 	}
 
 	public bool ContainsGeometry(GameObject toCompare) {
@@ -96,4 +109,18 @@ public class RegisteredObject : MonoBehaviour {
 			geo => geo.gameObject.GetInstanceID() == toCompareID); 
 	}
 
+	private void DeterminePose() {
+		// Pose is the average position of all points / surfaces
+		List<Vector3> points = new List<Vector3>(geometry.points);
+		points.AddRange(geometry.worldObjects.Select(o => o.transform.position));
+		Vector3 avg = Vector3.zero;
+		foreach(Vector3 p in points) {
+			avg += p;
+		}
+		if (points.Count > 0) {
+			transform.position = avg / points.Count;
+		} else {
+			transform.position = Vector3.zero;
+		}
+	}
 }

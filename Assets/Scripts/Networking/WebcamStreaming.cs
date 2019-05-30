@@ -47,7 +47,7 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
     #if !UNITY_EDITOR
         udpClient = new UdpClientUWP();
         udpClient.messageReceivedEvent.AddListener(OnUdpMessageReceived);
-        udpClient.BindAny(Config.ORListenPort);
+        udpClient.BindAny(Config.System.ObjectTrackingPort);
     #endif
     }
 
@@ -127,13 +127,13 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
                     Debug.LogFormat("Frame {0} Time to encode: {1}", _frameNum, sw.ElapsedMilliseconds);
 
             #if !UNITY_EDITOR
-                udpClient.SendBytes(framePacket, Config.Params.ServerIP, Config.ORListenPort);
+                udpClient.SendBytes(framePacket, Config.System.ServerIP,
+                    Config.System.ObjectTrackingPort);
                 if (!firstSent)
                 {
                     firstSentTime = DateTime.Now;
                     firstSent = true;
                 }
-                //Debug.LogFormat("Sent to: {0}:{1}", Config.Params.ServerIP, Config.ORListenPort);
             #endif
             });
         }

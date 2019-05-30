@@ -39,21 +39,11 @@ public class ObjectMemory {
 		RegisteredObject registration = newObj.GetComponent<RegisteredObject>();
 		registration.Init(++regIDCounter, name);
 		registration.UpdateGeometry(position);
-		registration.UpdateGeometry(worldObject);
+		// registration.UpdateGeometry(worldObject);
 
 		Renderer rend = newObj.GetComponent<Renderer>();
 		rend.material.SetColor("_Color", Color.green);
 		
-		// Debug world renderer
-		Debug.LogFormat("Registered GameObject {0}, id: {1}, active: {2}", 
-			worldObject, worldObject.GetInstanceID(), worldObject.activeSelf);
-		// Debug.Log("")
-		// Renderer worldObjectRend = worldObject.GetComponent<Renderer>();
-		// worldObjectRend.sharedMaterial = debugMaterial;
-		// worldObjectRend.material.SetColor("_Color", Color.red);
-		// worldObjectRend.material.SetColor("_BaseColor", Color.red);
-		// worldObjectRend.material.SetColor("_WireColor", Color.blue);
-
 		newObj.SetActive(isActive);
 		objects[name] = newObj;
 		return newObj;
@@ -95,6 +85,15 @@ public class ObjectMemory {
 		
 	}
 
+	public void MoveObject(string classname, Vector3 newPosition) {
+		GameObject obj = GetRegisteredObject(classname);
+		if (obj != null) {
+			RegisteredObject registration = obj.GetComponent<RegisteredObject>();
+			registration.ClearGeometry();
+			registration.UpdateGeometry(newPosition);
+		}
+	}
+
 	public void DisableObject(string classname) {
 		GameObject obj = GetRegisteredObject(classname);
 		if (obj != null) {
@@ -107,9 +106,6 @@ public class ObjectMemory {
 		if (obj != null) {
 			obj.SetActive(true);
 		}
-
-		// Reset HUD (maybe abstract this more...)
-		HologramManager.Instance.ResetHUD();
 	}
 
 	public bool EnabledStatus(string classname) {
