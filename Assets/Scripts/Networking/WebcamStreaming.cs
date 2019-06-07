@@ -7,6 +7,7 @@ using System.Collections;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
@@ -98,6 +99,8 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
     private void OnFrameSampleAcquired(VideoCaptureSample sample)
     {
+        long frameCaptureTimestamp = Utils.UnixTimestampMilliseconds();
+
         // Allocate byteBuffer
         if (_latestImageBytes == null || _latestImageBytes.Length < sample.dataLength)
             _latestImageBytes = new byte[sample.dataLength];
@@ -119,12 +122,14 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
         if (streaming) {
             Task.Run(() => {
-                Stopwatch sw = Stopwatch.StartNew();
                 byte[] jpegBytes = TurboJpegEncoder.EncodeImage(_resolution.width, _resolution.height, s.frameData);
-                byte[] framePacket = ConstructFramePacket(jpegBytes, s.camera2WorldMatrix, s.projectionMatrix);
-                sw.Stop();
-                if (DebugMode.active && ((_frameNum % 60) == 0))
-                    Debug.LogFormat("Frame {0} Time to encode: {1}", _frameNum, sw.ElapsedMilliseconds);
+                // byte[] framePacket = ConstructFramePacket(jpegBytes, s.camera2WorldMatrix, s.projectionMatrix);
+                
+                CameraFrameMessage message = GetCameraFrameMessage(_frameNum,
+                    jpegBytes, s.camera2WorldMatrix, s.projectionMatrix);
+                message.frameCaptureTimestamp = frameCaptureTimestamp;
+                message.frameSendTimestamp = Utils.UnixTimestampMilliseconds();
+                byte[] framePacket = GetCameraFramePacket(message, jpegBytes);
 
             #if !UNITY_EDITOR
                 udpClient.SendBytes(framePacket, Config.System.ServerIP,
@@ -145,45 +150,72 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
     }
 
     public void OnUdpMessageReceived(string incomingIP, string incomingPort, byte[] data) {
-        // Read matrices
-        int ind = 0;
-        int matrixSize = sizeof(float) * 16;
-        float[] camera2WorldBuf = new float[16];
-        System.Buffer.BlockCopy(data, ind, camera2WorldBuf, 0, matrixSize);
-        ind += matrixSize;
-        float[] projectionBuf = new float[16];
-        System.Buffer.BlockCopy(data, ind, projectionBuf, 0, matrixSize);
-        ind += matrixSize;
+        int idx = 0;
+
+        // Get header size
+        int[] headerSizeBytes = new int[1];
+        System.Buffer.BlockCopy(data, idx, headerSizeBytes, 0, sizeof(int));
+        idx += sizeof(int);
+        int headerSize = headerSizeBytes[0];
+
+        // Get header
+        byte[] headerBytes = new byte[headerSize];
+        System.Buffer.BlockCopy(data, idx, headerBytes, 0, headerSize);
+        idx += headerSize;
+        string headerStr = System.Text.Encoding.UTF8.GetString(headerBytes);
+        var message = JsonUtility.FromJson<CameraFrameMessage>(headerStr);
+        message.resultsReceiveTimestamp = Utils.UnixTimestampMilliseconds();
+
+        var predictions = message.results;
+
+        // // Get payload (predicted points)
+        // byte[] payloadBytes = new byte[message.payloadSize];
+        // System.Buffer.BlockCopy(data, idx, payloadBytes, 0, message.payloadSize);
+        // idx += message.payloadSize;
+        // string payloadStr = System.Text.Encoding.UTF8.GetString(payloadBytes);
+        // var predictions = JsonUtility.FromJson<ImagePredictions>(payloadStr);
+
+        HologramManager.Instance.OnPredictionsReceived(message, predictions);
+
+        // // Read matrices
+        // int ind = 0;
+        // int matrixSize = sizeof(float) * 16;
+        // float[] camera2WorldBuf = new float[16];
+        // System.Buffer.BlockCopy(data, ind, camera2WorldBuf, 0, matrixSize);
+        // ind += matrixSize;
+        // float[] projectionBuf = new float[16];
+        // System.Buffer.BlockCopy(data, ind, projectionBuf, 0, matrixSize);
+        // ind += matrixSize;
         
-        // Read Predictions
-        int[] jsonSize = new int[1];
-        System.Buffer.BlockCopy(data, ind, jsonSize, 0, sizeof(int));
-        ind += sizeof(int);
-        byte[] jsonBytes = new byte[jsonSize[0]];
-        System.Buffer.BlockCopy(data, ind, jsonBytes, 0, jsonSize[0]);
-        string jsonStr = System.Text.Encoding.UTF8.GetString(jsonBytes);
+        // // Read Predictions
+        // int[] jsonSize = new int[1];
+        // System.Buffer.BlockCopy(data, ind, jsonSize, 0, sizeof(int));
+        // ind += sizeof(int);
+        // byte[] jsonBytes = new byte[jsonSize[0]];
+        // System.Buffer.BlockCopy(data, ind, jsonBytes, 0, jsonSize[0]);
+        // string jsonStr = System.Text.Encoding.UTF8.GetString(jsonBytes);
 
-        if (DebugMode.active) {
-            Debug.LogFormat("Received Message ({0}): {1}", data.Length.ToString(), jsonStr);
-        }
+        // if (DebugMode.active) {
+        //     Debug.LogFormat("Received Message ({0}): {1}", data.Length.ToString(), jsonStr);
+        // }
 
-        // Convert to unity matrices
-        Matrix4x4 camera2WorldMatrix = 
-            LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(camera2WorldBuf);
-        Matrix4x4 projectionMatrix =
-            LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(projectionBuf);
+        // // Convert to unity matrices
+        // Matrix4x4 camera2WorldMatrix = 
+        //     LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(camera2WorldBuf);
+        // Matrix4x4 projectionMatrix =
+        //     LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(projectionBuf);
 
-        // Deserialize predictions
-        ImagePredictions pred = JsonUtility.FromJson<ImagePredictions>(jsonStr);
+        // // Deserialize predictions
+        // ImagePredictions pred = JsonUtility.FromJson<ImagePredictions>(jsonStr);
 
-        if (!firstReceived)
-        {
-            firstReceivedTime = DateTime.Now;
-            firstReceived = true;
-        }
+        // if (!firstReceived)
+        // {
+        //     firstReceivedTime = DateTime.Now;
+        //     firstReceived = true;
+        // }
 
-        HologramManager.Instance.OnPredictionsReceived(
-            ref camera2WorldMatrix, ref projectionMatrix, pred);
+        // HologramManager.Instance.OnPredictionsReceived(
+        //     ref camera2WorldMatrix, ref projectionMatrix, pred);
     }
     
     private byte[] ConstructFramePacket(byte[] frameData, float[] camera2Transform, float[] projection) {
@@ -206,4 +238,45 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 		System.Buffer.BlockCopy(frameData, 0, data, dstOffset, frameData.Length);
 		return data;
 	}
+
+    private CameraFrameMessage GetCameraFrameMessage(int frameNum,
+        byte[] frameData, float[] camera2World, float[] projection)
+    {
+        var message = new CameraFrameMessage();
+        message.type = "frame";
+        message.sessionUUID = GameManager.Instance.sessionID;
+        message.frameID = frameNum;
+        message.payloadSize = frameData.Length;
+
+        int mSz = sizeof(float) * 16;
+        System.Buffer.BlockCopy(camera2World, 0, message.camera2World, 0, mSz);
+        System.Buffer.BlockCopy(projection, 0, message.projection, 0, mSz);
+
+        return message;
+    }
+
+    private byte[] GetCameraFramePacket(CameraFrameMessage message, 
+        byte[] frameData)
+    {
+        string messageStr = JsonUtility.ToJson(message);
+        byte[] messageData = Encoding.UTF8.GetBytes(messageStr);
+        byte[] header = BitConverter.GetBytes(messageData.Length);
+
+        byte[] data =
+            new byte[header.Length + messageData.Length + frameData.Length];
+        
+        // Copy header that gives size of json message
+        int idx = 0;
+        System.Buffer.BlockCopy(header, 0, data, 0, header.Length);
+        idx += header.Length;
+    
+        // Copy json message
+        System.Buffer.BlockCopy(messageData, 0, data, idx, messageData.Length);
+        idx += messageData.Length;
+
+        // Copy payload
+        System.Buffer.BlockCopy(frameData, 0, data, idx, frameData.Length);
+
+        return data;
+    }
 }

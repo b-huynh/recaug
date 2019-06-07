@@ -1004,6 +1004,7 @@ GameObject:
   m_Component:
   - component: {fileID: 602536632}
   - component: {fileID: 602536633}
+  - component: {fileID: 602536634}
   m_Layer: 0
   m_Name: HologramManager
   m_TagString: Untagged
@@ -1040,13 +1041,26 @@ MonoBehaviour:
   hitmasks:
     serializedVersion: 2
     m_Bits: 4294967291
-  labelPrefab: {fileID: 1212843181779374, guid: a16f25a39a1111442a798ae95db60cf6,
-    type: 3}
   hudAnnotation: {fileID: 127892684}
   defaultAnnotation: '[]'
   observer: {fileID: 859538515}
   debugObjectMaterial: {fileID: 0}
   isLogging: 0
+  objMem: {fileID: 602536634}
+--- !u!114 &602536634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 602536631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4264285799c01c94d8e9cefe1dc026e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectPrefab: {fileID: 1212843181779374, guid: a16f25a39a1111442a798ae95db60cf6,
+    type: 3}
 --- !u!1 &734623943 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1000014098139846, guid: f2e93466807054f4d84502470fe921c0,

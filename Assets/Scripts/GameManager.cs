@@ -8,7 +8,7 @@ using UnityEngine;
 enum InspectorTab { CONFIG, LOG }
 
 public class GameManager : Singleton<GameManager> {
-
+    public string sessionID = "";
     public bool isInOverlay = false;
     public GameObject debugOverlay = null;
     private InspectorTab currentTab = InspectorTab.CONFIG;
@@ -27,6 +27,7 @@ public class GameManager : Singleton<GameManager> {
     protected override void Awake() {
         base.Awake();
         Config.LoadHTTP(configURL);
+        sessionID = System.Guid.NewGuid().ToString();
     }
 
     public void Start() {
@@ -35,6 +36,24 @@ public class GameManager : Singleton<GameManager> {
     void Update() {
         if (Input.GetKeyDown(KeyCode.Q))
             Toggle("Debug Overlay", ref isInOverlay);
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            // Perform Soft Reset:
+            // Load new config
+            // Delete all current annotations
+            // Generate new session ID
+            HologramManager.Instance.SaveLog();
+            HologramManager.Instance.ClearLog();
+            ObjectMemory.Instance.ClearMemory();
+            Config.LoadHTTP(configURL);
+            sessionID = System.Guid.NewGuid().ToString();
+        }
+
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            HologramManager.Instance.SaveLog();
+        }
 
         debugOverlay.SetActive(isInOverlay);
         if (isInOverlay) {

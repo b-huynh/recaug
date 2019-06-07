@@ -62,7 +62,7 @@ public static class TurboJpegEncoder {
 		void* handle = tjInitCompress();
 
 		// Input params
-		int jpegQual = 55;
+		int jpegQual = 50;
 		int pitch = 0;
 		int pixelFormat = (int)TJPF.TJPF_BGRA;
 		int jpegSubsamp = (int)TJSAMP.TJSAMP_444;

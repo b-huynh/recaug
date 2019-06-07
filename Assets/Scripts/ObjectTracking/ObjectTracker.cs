@@ -47,10 +47,11 @@ public class ObjectTracker {
         foreach(WorldPrediction wp in worldPreds.predictions) 
         {
             string classname = wp.label;
-            GameObject currObj = omem.GetConfirmedObject(classname);
-            if (!currObj)
+            if (!omem.IsConfirmed(classname))
                 continue;
-            Vector3 registeredPosition = currObj.transform.position;
+
+            var registration = omem.GetRegistration(classname);
+            Vector3 registeredPosition = registration.position;
             Vector3 newPosition = wp.position;
 
             // Check if prediction is very far from confirmed

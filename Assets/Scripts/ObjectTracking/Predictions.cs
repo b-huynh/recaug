@@ -2,6 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class WorldPoint {
+	public string label;
+	public float x;
+	public float y;
+	public float z;
+	public float r;
+	public float g;
+	public float b;
+}
+
 // A single prediction from an image
 [System.Serializable]
 public class ImagePrediction {
@@ -12,18 +23,23 @@ public class ImagePrediction {
 	public int ymax;
 	public int xcen;
 	public int ycen;
+	public float cen_r;
+	public float cen_g;
+	public float cen_b;
 }
 
 // Predictions in Image space, deserializable from JSON server messages.
 [System.Serializable]
 public class ImagePredictions {
 	public List<ImagePrediction> labels;
+	public List<WorldPoint> projected;
 }
 
 // A single world prediction
 public class WorldPrediction {
 	public string label;
 	public Vector3 position;
+	public Color color;
 	public GameObject worldObject;
 	public WorldPrediction(string name, Vector3 pos, GameObject worldObject) {
 		this.label = name;
@@ -140,8 +156,10 @@ public class ImageToWorldProjector {
 			GameObject worldObject = ToWorldSurface(ref camera2World,
 				ref projection, imgPoint, out worldPoint);
 			if (worldObject != null) {
-				worldPreds.Add(new WorldPrediction(p.className, worldPoint, 
-					worldObject));
+				var wp = new WorldPrediction(p.className, worldPoint, 
+					worldObject);
+				wp.color = new Color(p.cen_r, p.cen_g, p.cen_b);
+				worldPreds.Add(wp);
 			}
 		}
 		return worldPreds;

@@ -17,23 +17,38 @@ using Windows.Web.Http.Filters;
 
 
 [System.Serializable]
-public class SystemParams {
+public class SystemParams
+{
     public string ServerIP = "192.168.2.251";
     public string ClientIP = "192.168.2.238";
     public string ObjectTrackingPort = "12000";
 	public string EyeTrackingPort = "13000";
 	public string DebugLogPort = "9999";
     public float ConfidenceThreshold = 0.0f;
+    public float MaxObjectRadius = 0.4f;
+    public int GeometryCapacity = 60;
+
+    public int FilterWindowSize = 120;
+    public int FilterWindowMinCount = 5;
+    public float FilterMinDist = 0.2f;
 }
 
 [System.Serializable]
-public class UIParams {
-	public float ConfirmTimeout = 20.0f; // Seconds. No confirmation timeout.
-	public float FocusConfirmTime = 1.5f; // Seconds. Focus time to select.
+public class UIParams
+{
+	// How long till we delete unconfirmed objects. 0.0f for never delete.
+    public float ConfirmTimeout = 0.0f; // Seconds.
+    // How long to focus on object label before select.
+	public float FocusConfirmTime = 1.0f; // Seconds.
+    public float PositionUpdateRate = 60.0f; // Seconds.
+    public string DeterminePoseMethod = "average"; // "average" or "median".
+    public int MedianAverageWindow = 5;
 }
 
 [System.Serializable]
-public class ExperimentParams : ISerializationCallbackReceiver {
+public class ExperimentParams : ISerializationCallbackReceiver
+{
+    public bool SaveLogs = false;
     public Translator.TargetLanguage TargetLanguage;
     public HashSet<string> KnownObjects = new HashSet<string>();
     public HashSet<string> ValidObjects = new HashSet<string>();
