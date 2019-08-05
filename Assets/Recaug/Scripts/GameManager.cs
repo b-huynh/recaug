@@ -22,7 +22,7 @@ public class GameManager : Singleton<GameManager> {
 
     private int firstFrameLatency = 0; // Should be milliseconds
 
-    private string configURL = "http://192.168.2.134:8080/config.json";
+    private string configURL = "http://192.168.100.108:8080/config.json";
 
     protected override void Awake() {
         base.Awake();
