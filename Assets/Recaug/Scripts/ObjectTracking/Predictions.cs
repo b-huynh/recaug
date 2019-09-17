@@ -82,7 +82,8 @@ public class ImageToWorldProjector {
 		excludeSet = new HashSet<string>();
 	}
 
-	public void ExcludeObjects(IEnumerable<string> toExclude) {
+	public void ExcludeObjects(IEnumerable<string> toExclude)
+	{
         excludeSet.UnionWith(toExclude);
     }
 
@@ -144,7 +145,7 @@ public class ImageToWorldProjector {
 
 	public WorldPredictions ToWorldPredictions(ref Matrix4x4 camera2World,
 		ref Matrix4x4 projection, ImagePredictions imgPreds)
-	{ 
+	{
 		string ts = System.DateTime.Now.Ticks.ToString();
 		WorldPredictions worldPreds = new WorldPredictions(ts);
 		foreach(ImagePrediction p in imgPreds.labels) {

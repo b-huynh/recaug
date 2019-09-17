@@ -20,9 +20,7 @@ public class GameManager : Singleton<GameManager> {
 
     private GameObject evalOriginPoint = null;
 
-    private int firstFrameLatency = 0; // Should be milliseconds
-
-    private string configURL = "http://192.168.100.108:8080/config.json";
+    private string configURL = "http://192.168.100.236:8080/config.json";
 
     protected override void Awake() {
         base.Awake();
@@ -86,8 +84,8 @@ public class GameManager : Singleton<GameManager> {
                     currentTab = InspectorTab.LOG;
 
                 // Toggle features
-                if (Input.GetKeyDown(KeyCode.P))
-                    Toggle("Streaming", ref WebcamStreaming.Instance.streaming);
+                // if (Input.GetKeyDown(KeyCode.P))
+                //     Toggle("Streaming", ref WebcamStreaming.Instance.streaming);
                 if (Input.GetKeyDown(KeyCode.D))
                     Toggle("Debug Mode", ref debug);
                 // if (Input.GetKeyDown(KeyCode.R))
@@ -128,13 +126,6 @@ public class GameManager : Singleton<GameManager> {
         // toDraw += "[RAW POINTS] " + HologramManager.Instance.rawPointsMode.ToString() + "\n";
         // toDraw += "[LOGGING POINTS] " + HologramManager.Instance.isLogging.ToString() + "\n";
         // toDraw += "[DEBUG] " + debug.ToString() + "\n";
-        
-        // Latency
-        if (WebcamStreaming.Instance.firstSent && WebcamStreaming.Instance.firstReceived)
-        {
-            firstFrameLatency = (WebcamStreaming.Instance.firstReceivedTime - WebcamStreaming.Instance.firstSentTime).Milliseconds;
-        }
-        toDraw += "[FRAME LATENCY] " + firstFrameLatency.ToString() + "ms \n";
 
         // Draw inspector tabs
         switch(currentTab) {

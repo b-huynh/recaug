@@ -11,6 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
+using Recaug;
+using Recaug.Networking;
+
 public class WebcamStreaming : Singleton<WebcamStreaming> {
     // HoloLens Camera Stream
     private HoloLensCameraStream.Resolution _resolution;
@@ -19,9 +22,10 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
     private byte[] _latestImageBytes;
 
     // Streaming over network
-    private int _frameNum;
-    public bool streaming = false;
-    private UdpClientUWP udpClient = null;
+    // private int _frameNum;
+    // public bool streaming = false;
+    // private UdpClientUWP udpClient = null;
+    public RecaugClient recaugClient = null;
 
     // This struct store frame related data
     public class SampleStruct {
@@ -29,28 +33,22 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
         public byte[] frameData;
     }
 
-    public bool firstSent = false;
-    public DateTime firstSentTime;
-
-    public bool firstReceived = false;
-    public DateTime firstReceivedTime;
-
     void Start() {
         //Fetch a pointer to Unity's spatial coordinate system if you need pixel mapping
         _spatialCoordinateSystemPtr = UnityEngine.XR.WSA.WorldManager.GetNativeISpatialCoordinateSystemPtr();
 
-        _frameNum = -1;
+        // _frameNum = -1;
         CameraStreamHelper.Instance.GetVideoCaptureAsync(OnVideoCaptureCreated);
-        InitStreaming();
+        // InitStreaming();
 	}
 
-    void InitStreaming() {
-    #if !UNITY_EDITOR
-        udpClient = new UdpClientUWP();
-        udpClient.messageReceivedEvent.AddListener(OnUdpMessageReceived);
-        udpClient.BindAny(Config.System.ObjectTrackingPort);
-    #endif
-    }
+    // void InitStreaming() {
+    // #if !UNITY_EDITOR
+    //     udpClient = new UdpClientUWP();
+    //     udpClient.messageReceivedEvent.AddListener(OnMessageReceived);
+    //     udpClient.BindAny(Config.System.ObjectTrackingPort);
+    // #endif
+    // }
 
     protected override void OnDestroy()
     {
@@ -99,9 +97,6 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
     private void OnFrameSampleAcquired(VideoCaptureSample sample)
     {
-        long frameCaptureTimestamp = Utils.UnixTimestampMilliseconds();
-
-        // Allocate byteBuffer
         if (_latestImageBytes == null || _latestImageBytes.Length < sample.dataLength)
             _latestImageBytes = new byte[sample.dataLength];
 
@@ -117,31 +112,55 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
         sample.Dispose();
 
-        // Update Frame Counter
-        _frameNum++;
+        recaugClient.OnFrameReceived(s.frameData, _resolution.width,
+            _resolution.height, s.camera2WorldMatrix, s.projectionMatrix);
 
-        if (streaming) {
-            Task.Run(() => {
-                byte[] jpegBytes = TurboJpegEncoder.EncodeImage(_resolution.width, _resolution.height, s.frameData);
-                // byte[] framePacket = ConstructFramePacket(jpegBytes, s.camera2WorldMatrix, s.projectionMatrix);
+
+        // OLLLDDDDD
+
+        // long frameCaptureTimestamp = Utils.UnixTimestampMilliseconds();
+
+        // // Allocate byteBuffer
+        // if (_latestImageBytes == null || _latestImageBytes.Length < sample.dataLength)
+        //     _latestImageBytes = new byte[sample.dataLength];
+
+        // // Fill frame struct 
+        // SampleStruct s = new SampleStruct();
+        // sample.CopyRawImageDataIntoBuffer(_latestImageBytes);
+        // s.frameData = _latestImageBytes;
+
+        // // Get the cameraToWorldMatrix and projectionMatrix
+        // if (!sample.TryGetCameraToWorldMatrix(out s.camera2WorldMatrix) || 
+        //     !sample.TryGetProjectionMatrix(out s.projectionMatrix))
+        //     return;
+
+        // sample.Dispose();
+
+        // // Update Frame Counter
+        // _frameNum++;
+
+        // if (streaming) {
+        //     Task.Run(() => {
+        //         byte[] jpegBytes = TurboJpegEncoder.EncodeImage(_resolution.width, _resolution.height, s.frameData);
+        //         // byte[] framePacket = ConstructFramePacket(jpegBytes, s.camera2WorldMatrix, s.projectionMatrix);
                 
-                CameraFrameMessage message = GetCameraFrameMessage(_frameNum,
-                    jpegBytes, s.camera2WorldMatrix, s.projectionMatrix);
-                message.frameCaptureTimestamp = frameCaptureTimestamp;
-                message.frameSendTimestamp = Utils.UnixTimestampMilliseconds();
-                byte[] framePacket = GetCameraFramePacket(message, jpegBytes);
+        //         CameraFrameMessage message = GetCameraFrameMessage(_frameNum,
+        //             jpegBytes, s.camera2WorldMatrix, s.projectionMatrix);
+        //         message.frameCaptureTimestamp = frameCaptureTimestamp;
+        //         message.frameSendTimestamp = Utils.UnixTimestampMilliseconds();
+        //         byte[] framePacket = GetCameraFramePacket(message, jpegBytes);
 
-            #if !UNITY_EDITOR
-                udpClient.SendBytes(framePacket, Config.System.ServerIP,
-                    Config.System.ObjectTrackingPort);
-                if (!firstSent)
-                {
-                    firstSentTime = DateTime.Now;
-                    firstSent = true;
-                }
-            #endif
-            });
-        }
+        //     #if !UNITY_EDITOR
+        //         udpClient.SendBytes(framePacket, Config.System.ServerIP,
+        //             Config.System.ObjectTrackingPort);
+        //         if (!firstSent)
+        //         {
+        //             firstSentTime = DateTime.Now;
+        //             firstSent = true;
+        //         }
+        //     #endif
+        //     });
+        // }
     }
 
     private void onVideoModeStopped(VideoCaptureResult result)
@@ -149,73 +168,33 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
         Debug.Log("Video Mode Stopped");
     }
 
-    public void OnUdpMessageReceived(string incomingIP, string incomingPort, byte[] data) {
-        int idx = 0;
+    public void OnMessageReceived(string fromHost, string fromPort, byte[] data)
+    {
+        // int idx = 0;
 
-        // Get header size
-        int[] headerSizeBytes = new int[1];
-        System.Buffer.BlockCopy(data, idx, headerSizeBytes, 0, sizeof(int));
-        idx += sizeof(int);
-        int headerSize = headerSizeBytes[0];
+        // // Get header size
+        // int[] headerSizeBytes = new int[1];
+        // System.Buffer.BlockCopy(data, idx, headerSizeBytes, 0, sizeof(int));
+        // idx += sizeof(int);
+        // int headerSize = headerSizeBytes[0];
 
-        // Get header
-        byte[] headerBytes = new byte[headerSize];
-        System.Buffer.BlockCopy(data, idx, headerBytes, 0, headerSize);
-        idx += headerSize;
-        string headerStr = System.Text.Encoding.UTF8.GetString(headerBytes);
-        var message = JsonUtility.FromJson<CameraFrameMessage>(headerStr);
-        message.resultsReceiveTimestamp = Utils.UnixTimestampMilliseconds();
+        // // Get header
+        // byte[] headerBytes = new byte[headerSize];
+        // System.Buffer.BlockCopy(data, idx, headerBytes, 0, headerSize);
+        // idx += headerSize;
+        // string headerStr = System.Text.Encoding.UTF8.GetString(headerBytes);
+        // var message = JsonUtility.FromJson<CameraFrameMessage>(headerStr);
+        // message.resultsReceiveTimestamp = Utils.UnixTimestampMilliseconds();
 
-        var predictions = message.results;
+        // var predictions = message.results;
 
-        // // Get payload (predicted points)
-        // byte[] payloadBytes = new byte[message.payloadSize];
-        // System.Buffer.BlockCopy(data, idx, payloadBytes, 0, message.payloadSize);
-        // idx += message.payloadSize;
-        // string payloadStr = System.Text.Encoding.UTF8.GetString(payloadBytes);
-        // var predictions = JsonUtility.FromJson<ImagePredictions>(payloadStr);
 
-        HologramManager.Instance.OnPredictionsReceived(message, predictions);
+        // TODO: Convert data to appropriate message object.
+        string json = MessageCodec.Unpack(data);
+        Debug.Log("Received: " + json);
+        PredictionMessage fm = JsonUtility.FromJson<PredictionMessage>(json);
 
-        // // Read matrices
-        // int ind = 0;
-        // int matrixSize = sizeof(float) * 16;
-        // float[] camera2WorldBuf = new float[16];
-        // System.Buffer.BlockCopy(data, ind, camera2WorldBuf, 0, matrixSize);
-        // ind += matrixSize;
-        // float[] projectionBuf = new float[16];
-        // System.Buffer.BlockCopy(data, ind, projectionBuf, 0, matrixSize);
-        // ind += matrixSize;
-        
-        // // Read Predictions
-        // int[] jsonSize = new int[1];
-        // System.Buffer.BlockCopy(data, ind, jsonSize, 0, sizeof(int));
-        // ind += sizeof(int);
-        // byte[] jsonBytes = new byte[jsonSize[0]];
-        // System.Buffer.BlockCopy(data, ind, jsonBytes, 0, jsonSize[0]);
-        // string jsonStr = System.Text.Encoding.UTF8.GetString(jsonBytes);
-
-        // if (DebugMode.active) {
-        //     Debug.LogFormat("Received Message ({0}): {1}", data.Length.ToString(), jsonStr);
-        // }
-
-        // // Convert to unity matrices
-        // Matrix4x4 camera2WorldMatrix = 
-        //     LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(camera2WorldBuf);
-        // Matrix4x4 projectionMatrix =
-        //     LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(projectionBuf);
-
-        // // Deserialize predictions
-        // ImagePredictions pred = JsonUtility.FromJson<ImagePredictions>(jsonStr);
-
-        // if (!firstReceived)
-        // {
-        //     firstReceivedTime = DateTime.Now;
-        //     firstReceived = true;
-        // }
-
-        // HologramManager.Instance.OnPredictionsReceived(
-        //     ref camera2WorldMatrix, ref projectionMatrix, pred);
+        // HologramManager.Instance.OnPredictionsReceived(message, predictions);
     }
     
     private byte[] ConstructFramePacket(byte[] frameData, float[] camera2Transform, float[] projection) {
