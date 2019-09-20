@@ -6,13 +6,13 @@ using UnityEngine;
 using HoloToolkit.Unity;
 using HoloToolkit.Unity.SpatialMapping;
 
-public class ObjectMemory : Singleton<ObjectMemory> {
+public class ObjectRegistry : Singleton<ObjectRegistry> {
 	public enum Modes { OVERWRITE, FIRST_IN }
 	public Modes mode = Modes.FIRST_IN;
 	public GameObject objectPrefab = null;
 	private Dictionary<string, ObjectRegistration> objects;
 
-	// public ObjectMemory(GameObject objectPrefab, Modes mode = Modes.FIRST_IN) {
+	// public ObjectRegistry(GameObject objectPrefab, Modes mode = Modes.FIRST_IN) {
 	// 	this.objects = new Dictionary<string, ObjectRegistration>();
 	// 	this.objectPrefab = objectPrefab;
 	// 	this.mode = mode;
@@ -34,8 +34,7 @@ public class ObjectMemory : Singleton<ObjectMemory> {
 		this.mode = mode;
 	}
 
-	public ObjectRegistration RegisterObject(string name, Vector3 position,
-		GameObject worldObject)
+	public ObjectRegistration RegisterObject(string name, Vector3 position)
 	{
 		if (mode == Modes.FIRST_IN && IsRegistered(name)) {
 			// Object already registered

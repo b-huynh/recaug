@@ -3,134 +3,137 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-// Filters world predictions to determine where objects are in the scene.
-public abstract class WPFilter
+namespace Recaug
 {
-    protected ObjectMemory omem = null;
-    protected HashSet<string> excludeSet = null;
-    public WPFilter(ObjectMemory omem)
+	// Filters world predictions to determine where objects are in the scene.
+	public abstract class WPFilter
 	{
-        this.omem = omem;
-        this.excludeSet = new HashSet<string>();
-    }
-
-    public virtual void AddPredictions(WorldPredictions wp) {}
-
-    public void ExcludeObjects(IEnumerable<string> toExclude)
-	{
-        excludeSet.UnionWith(toExclude);
-    }
-
-    protected void FilterExcluded(WorldPredictions wp)
-	{
-        wp.RemoveAll(excludeSet);
-    }
-}
-
-// Naive filter assumes all predictions are correct
-public class NaiveWPFilter : WPFilter
-{
-    public NaiveWPFilter(ObjectMemory omem)
-    : base(omem)
-	{
-        this.omem = omem;
-    }
-
-    public override void AddPredictions(WorldPredictions wp)
-	{
-        FilterExcluded(wp);
-
-        // All predictions are correct
-        foreach(WorldPrediction p in wp.predictions)
+		protected ObjectMemory omem = null;
+		protected HashSet<string> excludeSet = null;
+		public WPFilter(ObjectMemory omem)
 		{
-            omem.RegisterObject(p.label, p.position, p.worldObject);
-        }
-    }
-}
+			this.omem = omem;
+			this.excludeSet = new HashSet<string>();
+		}
 
-public class SlidingWindowWPFilter : WPFilter
-{
-    private int window, count;
-    private float mindist;
-	private class ObjectCandidate
-	{
-		public int pointCount = 0;
-		public int numFramesPassed = 0;
-		public string label;
-		public Vector3 position;
-		public ObjectCandidate(string label, Vector3 position)
+		public abstract List<PredPoint3D> Filter(List<PredPoint3D> wp);
+
+		public void ExcludeObjects(IEnumerable<string> toExclude)
 		{
-			this.label = label;
-			this.position = position;
+			excludeSet.UnionWith(toExclude);
+		}
+
+		protected void FilterExcluded(List<PredPoint3D> wp)
+		{
+			wp.RemoveAll(p => excludeSet.Contains(p.className));
 		}
 	}
-	private List<ObjectCandidate> candidates = new List<ObjectCandidate>();
 
-    public SlidingWindowWPFilter(ObjectMemory omem, int window = 120,
-        int count = 5, float mindist = 0.2f)
-    : base(omem)
+	// Naive filter assumes all predictions are correct
+	public class NaiveWPFilter : WPFilter
 	{
-        this.window = window;
-        this.count = count;
-        this.mindist = mindist;
-    }
+		public NaiveWPFilter(ObjectMemory omem)
+		: base(omem)
+		{
+			this.omem = omem;
+		}
 
-	private bool FuzzyMatchRegisteredObjects(WorldPrediction p)
-	{
-		// bool matchFound = false;
-		var nearby = omem.GetNearbyObjects(p.position, mindist);
-		return nearby.Count > 0;
+		public override List<PredPoint3D> Filter(List<PredPoint3D> wp)
+		{
+			// All predictions are correct
+			FilterExcluded(wp);
+			return wp;
+		}
 	}
 
-	private bool FuzzyMatchObjectCandidates(WorldPrediction p)
+	public class SlidingWindowWPFilter : WPFilter
 	{
-		bool matchFound = false;
-		int found_idx = -1;
-		for (int i = 0; i < candidates.Count; ++i)
+		private int window, count;
+		private float mindist;
+		private class ObjectCandidate
 		{
-			ObjectCandidate oc = candidates[i];
-			if (oc.label == p.label && 
-				Vector3.Distance(p.position, oc.position) <= mindist)
+			public int pointCount = 0;
+			public int numFramesPassed = 0;
+			public string label;
+			public Vector3 position;
+			public ObjectCandidate(string label, Vector3 position)
 			{
-				matchFound = true;
-				oc.position = (oc.position + p.position) / 2.0f;
-				oc.pointCount++;
-				if (oc.pointCount >= count) {
-					omem.RegisterObject(oc.label, oc.position, p.worldObject);
-					found_idx = i;
+				this.label = label;
+				this.position = position;
+			}
+		}
+		private List<ObjectCandidate> candidates = new List<ObjectCandidate>();
+
+		public SlidingWindowWPFilter(ObjectMemory omem, int window = 120,
+			int count = 5, float mindist = 0.2f)
+		: base(omem)
+		{
+			this.window = window;
+			this.count = count;
+			this.mindist = mindist;
+		}
+
+		private bool FuzzyMatchRegistered(PredPoint3D p)
+		{
+			var nearby = omem.GetNearbyObjects(p.position, mindist);
+			return nearby.Count > 0;
+		}
+
+		private int FuzzyMatchCandidates(PredPoint3D p)
+		{
+			for (int i = 0; i < candidates.Count; ++i)
+			{
+				ObjectCandidate oc = candidates[i];
+				if (oc.label == p.className && 
+					Vector3.Distance(p.position, oc.position) <= mindist)
+				{
+					return i;
 				}
-				break;
 			}
+			return -1;
 		}
-		if (found_idx != -1)
+
+		public override List<PredPoint3D> Filter(List<PredPoint3D> wp)
 		{
-			candidates.RemoveAt(found_idx);
+			FilterExcluded(wp);
+
+			List<PredPoint3D> result = new List<PredPoint3D>();
+			foreach(PredPoint3D p in wp)
+			{
+				// Ignore prediction if this object is already registered.
+				if (FuzzyMatchRegistered(p))
+				{
+					continue;
+				}
+
+				// Check if this prediction reinforces an existing candidate.
+				int candidate_idx = FuzzyMatchCandidates(p);
+				if (candidate_idx != -1)
+				{
+					var oc = candidates[candidate_idx];
+					oc.position = (oc.position + p.position) / 2.0f;
+					oc.pointCount++;
+					if (oc.pointCount >= count)
+					{
+						// TODO: uncouple object registration from filtering!
+						result.Add(new PredPoint3D(oc.label, 1.0f, oc.position));
+						candidates.RemoveAt(candidate_idx);
+					}
+				}
+				else // This prediction is a new, unknown object or candidate.
+				{
+					candidates.Add(new ObjectCandidate(p.className, p.position));
+				}
+			}
+
+			for (int i = 0; i < candidates.Count; ++i)
+			{
+				candidates[i].numFramesPassed++;
+			}
+			candidates.RemoveAll(c => c.pointCount >= count);
+			candidates.RemoveAll(c => c.numFramesPassed >= window);
+
+			return result;
 		}
-		return matchFound;
 	}
-
-    public override void AddPredictions(WorldPredictions wp)
-	{
-        FilterExcluded(wp);
-
-		foreach(WorldPrediction p in wp.predictions)
-		{
-			bool matchFound = FuzzyMatchRegisteredObjects(p);
-			if (!matchFound)
-			{
-				matchFound = FuzzyMatchObjectCandidates(p);
-			}
-			if (!matchFound)
-			{
-				candidates.Add(new ObjectCandidate(p.label, p.position));
-			}
-		}
-
-		for (int i = 0; i < candidates.Count; ++i)
-		{
-			candidates[i].numFramesPassed++;
-		}
-		candidates.RemoveAll(c => c.pointCount >= count);
-		candidates.RemoveAll(c => c.numFramesPassed >= window);
-    }
-}
+} // namespace Recaug

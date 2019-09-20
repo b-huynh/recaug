@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -50,6 +51,7 @@ namespace Recaug
         [Tooltip("Defines which layers are valid objects")]
         public LayerMask hitmasks = Physics.DefaultRaycastLayers;
         private ImageToWorldProjector projector = null;
+        private SlidingWindowWPFilter filter = null;
 
         void Start()
         {
@@ -95,14 +97,26 @@ namespace Recaug
 
         public void PredictionReceivedCallback(PredictionMessage message)
         {
-            // string s = JsonUtility.ToJson(message);
-            // Debug.Log(s);
+            // Project predictions
+            Matrix4x4 camMat =
+                LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(message.cameraMatrix);
+            Matrix4x4 projMat = 
+                LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(message.projectionMatrix);
 
-            // TODO: Project predictions
-            WorldPredictions worldPreds = projector.ToWorldPredictions(
-                ref message.cameraMatrix, ref message.projectionMatrix, imgPreds);
+            List<PredPoint2D> points2D = message.predictions.Select(p => 
+                new PredPoint2D(
+                    p.className,
+                    p.confidence,
+                    new Vector2(p.xcen, p.ycen),
+                    new Color(p.cen_r, p.cen_g, p.cen_b))
+            ).ToList();
+
+            List<PredPoint3D> points3D;
+            bool isHit = projector.ToWorld(
+                ref camMat, ref projMat, points2D, out points3D);
 
             // TODO: Filter/aggregate prediction results
+
 
             // TODO: Calculate object event boundaries and fire events.
         }

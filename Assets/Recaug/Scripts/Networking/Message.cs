@@ -83,16 +83,7 @@ namespace Recaug.Networking
         }
     }
 
-    /*
-        A single prediction from an image
-     */
-    [System.Serializable]
-    public class Prediction
-    {
-        public string className;
-        public int xmin, xmax, ymin, ymax, xcen, ycen;
-        public float cen_r, cen_g, cen_b;
-    }
+
 
     /*
         PredictionsMessage is a exclusively generated and sent by the recaug-server.
@@ -104,10 +95,10 @@ namespace Recaug.Networking
         public int frameID = -1;
         public float[] cameraMatrix = new float[16];
         public float[] projectionMatrix = new float[16];
-        public List<Prediction> predictions = new List<Prediction>();
-
+        public List<PredBox2D> predictions = new List<PredBox2D>();
+        
         public PredictionMessage(string sessionID, int frameID, float[] cam,
-            float[] proj, List<Prediction> predictions)
+            float[] proj, List<PredBox2D> predictions)
         : base("prediction", sessionID)
         {
             this.frameID = frameID;
