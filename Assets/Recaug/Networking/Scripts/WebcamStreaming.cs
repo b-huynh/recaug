@@ -1,55 +1,46 @@
 ﻿using UnityEngine;
 using HoloLensCameraStream;
+using HoloToolkit.Unity;
 using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
-/// <summary>
-/// In this example, we back-project to the 3D world 5 pixels, which are the principal point and the image corners,
-/// using the extrinsic parameters and projection matrices.
-/// Whereas the app is running, if you tap on the image, this set of points is reprojected into the world.
-/// </summary>
-public class ProjectionExample : MonoBehaviour {
+using Recaug.Client;
+
+public class WebcamStreaming : Singleton<WebcamStreaming> {
     // HoloLens Camera Stream
     private HoloLensCameraStream.Resolution _resolution;
     private VideoCapture _videoCapture;
     private IntPtr _spatialCoordinateSystemPtr;
     private byte[] _latestImageBytes;
 
-    private UnityEngine.XR.WSA.Input.GestureRecognizer _gestureRecognizer;
+    // Streaming over network
+    // public bool streaming = false;
 
     // This struct store frame related data
-    private class SampleStruct
+    public class SampleStruct
     {
         public float[] camera2WorldMatrix, projectionMatrix;
-        public byte[] data;
+        public byte[] frameData;
     }
 
-    void Awake()
-    {
-        // Create and set the gesture recognizer
-        _gestureRecognizer = new UnityEngine.XR.WSA.Input.GestureRecognizer();
-        _gestureRecognizer.SetRecognizableGestures(UnityEngine.XR.WSA.Input.GestureSettings.Tap);
-        _gestureRecognizer.StartCapturingGestures();
-    }
-
-	void Start() 
+    void Start()
     {
         //Fetch a pointer to Unity's spatial coordinate system if you need pixel mapping
         _spatialCoordinateSystemPtr = UnityEngine.XR.WSA.WorldManager.GetNativeISpatialCoordinateSystemPtr();
-	    CameraStreamHelper.Instance.GetVideoCaptureAsync(OnVideoCaptureCreated);
+
+        CameraStreamHelper.Instance.GetVideoCaptureAsync(OnVideoCaptureCreated);
 	}
 
-    void Update() {
-    }
-
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         if(_videoCapture == null)
             return;
 
@@ -88,20 +79,18 @@ public class ProjectionExample : MonoBehaviour {
             Debug.LogWarning("Could not start video mode.");
             return;
         }
-
         Debug.Log("Video capture started.");
     }
 
     private void OnFrameSampleAcquired(VideoCaptureSample sample)
     {
-        // Allocate byteBuffer
         if (_latestImageBytes == null || _latestImageBytes.Length < sample.dataLength)
             _latestImageBytes = new byte[sample.dataLength];
 
         // Fill frame struct 
         SampleStruct s = new SampleStruct();
         sample.CopyRawImageDataIntoBuffer(_latestImageBytes);
-        s.data = _latestImageBytes;
+        s.frameData = _latestImageBytes;
 
         // Get the cameraToWorldMatrix and projectionMatrix
         if (!sample.TryGetCameraToWorldMatrix(out s.camera2WorldMatrix) || 
@@ -109,10 +98,9 @@ public class ProjectionExample : MonoBehaviour {
             return;
 
         sample.Dispose();
-    }
 
-    private void onVideoModeStopped(VideoCaptureResult result)
-    {
-        Debug.Log("Video Mode Stopped");
+        // Pass frame to Recaug Client
+        RecaugClient.Instance.OnFrameReceived(s.frameData, _resolution.width,
+            _resolution.height, s.camera2WorldMatrix, s.projectionMatrix);
     }
 }
