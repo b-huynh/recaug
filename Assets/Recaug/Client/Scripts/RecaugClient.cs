@@ -57,8 +57,10 @@ namespace Recaug.Client
         private SlidingWindowWPFilter filter = null;
         // private NaiveWPFilter filter = null;
 
-        void Start()
+        protected override void Awake()
         {
+            base.Awake();
+            
             objectInViewEvent = new ObjectInViewEvent();
             objectNearbyEvent = new ObjectNearbyEvent();
 
@@ -90,7 +92,7 @@ namespace Recaug.Client
         {
             // Init Projector
             var resolution = new HoloLensCameraStream.Resolution(
-                config.CameraHeight, config.CameraWidth);
+                config.CameraWidth, config.CameraHeight);
             projector = new ImageToWorldProjector(hitmasks, resolution);
             
             // Init filter / object discovery algorithm
@@ -99,9 +101,9 @@ namespace Recaug.Client
                 config.FilterWindowMinCount,
                 config.FilterMinDist);
             // filter = new NaiveWPFilter();
-            // HashSet<string> toExclude = config.KnownObjects;
-            // toExclude.ExceptWith(config.ValidObjects);
-            // filter.ExcludeObjects(toExclude);
+            HashSet<string> toExclude = config.KnownObjects;
+            toExclude.ExceptWith(config.ValidObjects);
+            filter.ExcludeObjects(toExclude);
         }
 
         // Called when new frame is received from a frame source
@@ -124,6 +126,10 @@ namespace Recaug.Client
 
             // Encode as base64 string
             FrameMessage m = messageFactory.GetFrameMessage(f, camMat, projMat);
+
+            // Debug.LogFormat("[OnFrameReceived] Before Serialize Matrix: {0}", string.Join(", ", camMat));
+            // Debug.LogFormat("[OnFrameReceived] Serialized Send Message: {0}", JsonUtility.ToJson(m));
+
             byte[] packet = MessageCodec.Pack(JsonUtility.ToJson(m));
             messageClient.SendBytes(packet, "192.168.100.233", "12000");
         }
@@ -132,11 +138,13 @@ namespace Recaug.Client
         {
             // Project predictions
             Matrix4x4 camMat =
-                LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(message.cameraMatrix);
+                LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(
+                    message.DecodedCameraMatrix());
             Matrix4x4 projMat = 
-                LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(message.projectionMatrix);
+                LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(
+                    message.DecodedProjectionMatrix());
 
-            // Debug.Log("PredictionMessage: " + JsonUtility.ToJson(message));
+            // Debug.LogFormat("Received Message: {0}", JsonUtility.ToJson(message));
 
             // Debug.Log("PM Predictions Length: " + message.predictions.Count.ToString());
 

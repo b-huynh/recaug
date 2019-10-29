@@ -92,10 +92,6 @@ namespace Recaug.Networking
                 PredictionMessage pm = 
                     JsonUtility.FromJson<PredictionMessage>(str);
                 predictionEvent.Invoke(pm);
-                // ThreadUtils.Instance.InvokeOnMainThread(() =>
-                // {
-                //     predictionEvent.Invoke(pm);
-                // });
             }
         }
 

@@ -206,7 +206,13 @@ namespace Recaug
 		public bool ToWorld(ref Matrix4x4 camMat, ref Matrix4x4 projMat,
 			Vector2 point2D, out Vector3 point3D)
 		{
+			// Debug.LogFormat("[ToWorld] Input: {0}, Res: W:{1}, H:{2}",
+			// 	point2D.ToString(), resolution.width, resolution.height);
+			// Debug.LogFormat("[ToWorld] CamMat: {0}", camMat.ToString());
+			// Debug.LogFormat("[ToWorld] ProjMat: {0}", projMat.ToString());
+
 			Vector3 from = camMat.GetColumn(3);
+			// Debug.LogFormat("[ToWorld] Ray From Point: {0}", from.ToString());
 			Vector3 rayDirection = LocatableCameraUtils.PixelCoordToWorldCoord(
 				camMat, projMat, resolution, point2D);
 			RaycastHit hitInfo;
@@ -215,6 +221,7 @@ namespace Recaug
 			point3D = new Vector3();
 			if (isHit)
 			{
+				// Debug.LogFormat("[ToWorld] Hit (no delta): {0}", hitInfo.point.ToString());
 				Vector3 towardsUser = (Camera.main.transform.position - hitInfo.point).normalized;
 				point3D = hitInfo.point + (towardsUser * delta);
 			}

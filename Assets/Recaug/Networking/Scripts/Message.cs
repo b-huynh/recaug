@@ -60,8 +60,11 @@ namespace Recaug.Networking
     public class FrameMessage : Message
     {
         public int frameID = -1;
-        public float[] cameraMatrix = new float[16];
-        public float[] projectionMatrix = new float[16];
+        // public float[] cameraMatrix = new float[16];
+        // public float[] projectionMatrix = new float[16];
+        public string cameraMatrix = "";
+        public string projectionMatrix = "";
+
         public string frameBase64 = "";
 
         // public FrameMessage(string sessionID, int id, float[] cam, float[] proj,
@@ -77,8 +80,17 @@ namespace Recaug.Networking
             byte[] frame) : base("frame", sessionID)
         {
             this.frameID = id;
-            this.cameraMatrix = cam;
-            this.projectionMatrix = proj;
+            
+            // Serialize camera and projection matrix as base64 strings
+            var camBytes = new byte[cam.Length * sizeof(float)];
+            Buffer.BlockCopy(cam, 0, camBytes, 0, camBytes.Length);
+            this.cameraMatrix = Convert.ToBase64String(camBytes);
+
+            var projBytes = new byte[proj.Length * sizeof(float)];
+            Buffer.BlockCopy(proj, 0, projBytes, 0, projBytes.Length);
+            this.projectionMatrix = Convert.ToBase64String(projBytes);
+
+            // Serialize frame as base64 string
             this.frameBase64 = Convert.ToBase64String(frame);
         }
     }
@@ -93,8 +105,12 @@ namespace Recaug.Networking
     public class PredictionMessage : Message
     {
         public int frameID = -1;
-        public float[] cameraMatrix = new float[16];
-        public float[] projectionMatrix = new float[16];
+        // public float[] cameraMatrix = new float[16];
+        // public float[] projectionMatrix = new float[16];
+    
+        public string cameraMatrix = "";
+        public string projectionMatrix = "";
+
         public List<PredBox2D> predictions = new List<PredBox2D>();
         
         public PredictionMessage(string sessionID, int frameID, float[] cam,
@@ -102,9 +118,32 @@ namespace Recaug.Networking
         : base("prediction", sessionID)
         {
             this.frameID = frameID;
-            this.cameraMatrix = cam;
-            this.projectionMatrix = proj;
+
+            var camBytes = new byte[cam.Length * sizeof(float)];
+            Buffer.BlockCopy(cam, 0, camBytes, 0, camBytes.Length);
+            this.cameraMatrix = Convert.ToBase64String(camBytes);
+
+            var projBytes = new byte[proj.Length * sizeof(float)];
+            Buffer.BlockCopy(proj, 0, projBytes, 0, projBytes.Length);
+            this.projectionMatrix = Convert.ToBase64String(projBytes);
+            
             this.predictions = predictions;
+        }
+
+        public float[] DecodedCameraMatrix()
+        {
+            var camBytes = Convert.FromBase64String(this.cameraMatrix);
+            var camFloat = new float[camBytes.Length / sizeof(float)];
+            Buffer.BlockCopy(camBytes, 0, camFloat, 0, camBytes.Length);
+            return camFloat;
+        }
+
+        public float[] DecodedProjectionMatrix()
+        {
+            var projBytes = Convert.FromBase64String(this.projectionMatrix);
+            var projFloat = new float[projBytes.Length / sizeof(float)];
+            Buffer.BlockCopy(projBytes, 0, projFloat, 0, projBytes.Length);
+            return projFloat;
         }
     }
 

@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class KeyboardReposition : MonoBehaviour
+public class KeyPositionUI : MonoBehaviour
 {
     public float delta = 5.0f;
-    public bool debug = false;
     private RectTransform rectTransform = null;
     private UnityEngine.UI.Text uiText = null;
 
@@ -32,10 +31,10 @@ public class KeyboardReposition : MonoBehaviour
             rectTransform.anchoredPosition -= new Vector2(delta, 0);
         }
 
-        if (debug) {
-            uiText.text = string.Format("Pos({0:F1}, {1:F1})",
-                rectTransform.anchoredPosition.x,
-                rectTransform.anchoredPosition.y);
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            Debug.LogFormat("[{0}] At position: {1}", 
+                gameObject.name, rectTransform.position.ToString("F3"));
         }
     }
 }

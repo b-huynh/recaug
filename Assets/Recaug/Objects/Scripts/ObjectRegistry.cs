@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 using HoloToolkit.Unity;
 using HoloToolkit.Unity.SpatialMapping;
 
 namespace Recaug
 {
+
+
+
 	/* 
 		A registry of all known objects in the physical space.
 		Registration policy can either be:
@@ -17,14 +21,24 @@ namespace Recaug
 	*/ 
 	public class ObjectRegistry : Singleton<ObjectRegistry>
 	{
+		public class ObjectRegisteredEvent : UnityEvent<ObjectRegistration> {}
+		public class ObjectRemovedEvent : UnityEvent<ObjectRegistration> {}
+
+		public ObjectRegisteredEvent objectRegisteredEvent;
+		public ObjectRemovedEvent objectRemovedEvent;
+
 		public enum Policy { OVERWRITE, FIRST_IN }
 		public Policy policy = Policy.FIRST_IN;
 
 		private Dictionary<string, ObjectRegistration> registry;
 
-		public void Start()
+		protected override void Awake()
 		{
+			base.Awake();
+			
 			registry = new Dictionary<string, ObjectRegistration>();
+			objectRegisteredEvent = new ObjectRegisteredEvent();
+			objectRemovedEvent = new ObjectRemovedEvent();
 		}
 
 		public void Update() {}
@@ -39,6 +53,8 @@ namespace Recaug
 			// Create Registration
 			registry[name] = new ObjectRegistration(name, 1.0f, position);
 			Debug.LogFormat("Object: {0} registered", name);
+			
+			objectRegisteredEvent.Invoke(registry[name]);
 			return registry[name];
 		}
 
@@ -46,6 +62,7 @@ namespace Recaug
 		{
 			if (Contains(name))
 			{
+				objectRemovedEvent.Invoke(registry[name]);
 				registry[name].Destroy();
 				registry.Remove(name);
 			}

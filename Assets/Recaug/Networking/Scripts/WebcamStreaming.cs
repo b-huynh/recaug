@@ -11,7 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 
+using Recaug;
 using Recaug.Client;
+
 
 public class WebcamStreaming : Singleton<WebcamStreaming> {
     // HoloLens Camera Stream
@@ -38,6 +40,59 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
         CameraStreamHelper.Instance.GetVideoCaptureAsync(OnVideoCaptureCreated);
 	}
 
+    // TODO: Remove this. Its debug only;
+    private SampleStruct currentSample;
+    void Update()
+    {
+        // if (Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     RecaugClient.Instance.OnFrameReceived(
+        //         currentSample.frameData,
+        //         _resolution.width,
+        //         _resolution.height,
+        //         currentSample.camera2WorldMatrix,
+        //         currentSample.projectionMatrix);
+
+        //     Debug.LogFormat("[SpaceSend] Resolution: W:{0}, H:{1}", 
+        //         _resolution.width, _resolution.height);
+
+        //     var unityCamMat =
+        //         LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(
+        //             currentSample.camera2WorldMatrix);
+        //     var unityProjMat =
+        //         LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(
+        //             currentSample.projectionMatrix);
+
+        //     Debug.LogFormat("[SpaceSend] Before Serialize Matrix: {0}",
+        //         string.Join(", ", currentSample.camera2WorldMatrix));
+
+        //     Debug.LogFormat("[SpaceSend] CamMat:\n{0} \n ProjMat:\n{1}", 
+        //         unityCamMat.ToString(), unityProjMat.ToString());
+        // }
+
+        // if (Input.GetKeyDown(KeyCode.L))
+        // {
+        //     var projector = new ImageToWorldProjector(
+        //         RecaugClient.Instance.hitmasks,
+        //         new HoloLensCameraStream.Resolution(896, 504));
+        //     var unityCamMat =
+        //         LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(
+        //             currentSample.camera2WorldMatrix);
+        //     var unityProjMat =
+        //         LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(
+        //             currentSample.projectionMatrix);
+            
+        //     Vector3 outPoint;
+        //     bool isHit = projector.ToWorld(
+        //         ref unityCamMat,
+        //         ref unityProjMat,
+        //         new Vector2(448, 252),
+        //         out outPoint);
+
+        //     Debug.LogFormat("Local Hit Point: {0}", outPoint.ToString());
+        // }
+    }
+
     protected override void OnDestroy()
     {
         base.OnDestroy();
@@ -50,7 +105,8 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
     private void OnVideoCaptureCreated(VideoCapture v)
     {
-        if(v == null) {
+        if(v == null)
+        {
             Debug.LogError("No VideoCapture found");
             return;
         }
@@ -75,7 +131,8 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
     private void OnVideoModeStarted(VideoCaptureResult result)
     {
-        if(result.success == false) {
+        if(result.success == false) 
+        {
             Debug.LogWarning("Could not start video mode.");
             return;
         }
@@ -96,6 +153,8 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
         if (!sample.TryGetCameraToWorldMatrix(out s.camera2WorldMatrix) || 
             !sample.TryGetProjectionMatrix(out s.projectionMatrix))
             return;
+
+        currentSample = s;
 
         sample.Dispose();
 

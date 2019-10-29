@@ -93,6 +93,7 @@ public static class Translator {
 				{"microwave", "microonda"},
 				{"oven", "horno"},
 				{"toaster", "tostadora"},
+				{"book", "libro"},
 			}
 		}, 
 		{
@@ -177,20 +178,34 @@ public static class Translator {
 				{"microwave", "電子レンジ"},
 				{"oven", "オーブン"},
 				{"toaster", "トースター"},
+				{"book", "本"},
 			}
 		}
 	};
 
 	// Translates English word to a target language.
-	public static string Translate(string word, TargetLanguage tl) {
-		// Do nothing! Only translates English to other languages.
-		if (tl == TargetLanguage.English) {
+	public static string Translate(string word, TargetLanguage tl)
+	{
+		// Do nothing! Input is assumed to be English.
+		if (tl == TargetLanguage.English)
+		{
 			return word;
 		}
 
-		string translatedWord = wordMap[tl][word];
-		if (translatedWord == null)
-			translatedWord = word;
-		return translatedWord;
+		if (!wordMap.ContainsKey(tl))
+		{
+			throw new System.ArgumentException(string.Format(
+				"Cannot translate unknown language {0}", tl.ToString()));
+		}
+
+		try
+		{
+			return wordMap[tl][word];
+		}
+		catch
+		{
+			throw new System.ArgumentException(string.Format(
+				"Cannot translate unknown word {0}", word));
+		}
 	}
 }
