@@ -9,9 +9,6 @@ using HoloToolkit.Unity.SpatialMapping;
 
 namespace Recaug
 {
-
-
-
 	/* 
 		A registry of all known objects in the physical space.
 		Registration policy can either be:
@@ -46,8 +43,8 @@ namespace Recaug
 		public ObjectRegistration Register(string name, Vector3 position)
 		{
 			if (policy == Policy.FIRST_IN && Contains(name)) {
-				// Object already registered
-				return null;
+				// Object already registered, return same object
+				return registry[name];
 			}
 
 			// Create Registration

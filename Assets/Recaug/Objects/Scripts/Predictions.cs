@@ -136,52 +136,47 @@ namespace Recaug
 		}
 	}
 
-	// [System.Serializable]
-	// public class PredBox3D : Prediction
-	// {
-	// 	public float xmin, ymin, zmin, xmax, ymax, zmax;
-	// }
+    [System.Serializable]
+	public class PredBox3D : Prediction
+	{
+        public int xmin, ymin, zmin;
+		public float xmax, ymax, zmax;
+		public float xcen, ycen, zcen;
 
+		public PredBox3D(string className, float conf, Vector3 p1, Vector3 p2,
+			Vector3 cen)
+		: base(className, conf)
+		{
+			this.xmin = (int)p1.x;
+			this.ymin = (int)p1.y;
+			this.zmin = (int)p1.z;
 
-	// Predictions in Image space, deserializable from JSON server messages.
-	// [System.Serializable]
-	// public class ImagePredictions
-	// {
-	// 	public List<ImagePrediction> labels;
-	// 	public List<WorldPoint> projected;
-	// }
+			this.xmax = (int)p2.x;
+			this.ymax = (int)p2.y;
+			this.zmax = (int)p2.z;
 
-	// // A single world prediction
-	// public class WorldPrediction {
-	// 	public string label;
-	// 	public Vector3 position;
-	// 	public Color color;
-	// 	public GameObject worldObject;
-	// 	public WorldPrediction(string name, Vector3 pos, GameObject worldObject) {
-	// 		this.label = name;
-	// 		this.position = pos;
-	// 		this.worldObject = worldObject;
-	// 	}
-	// }
+			this.xcen = (int)cen.x;
+			this.ycen = (int)cen.y;
+			this.zcen = (int)cen.z;
+		}
 
-	// // Collection of world predictions from a particular Image (by timestamp).
-	// // Do not create yourself, use ImageToWorldProjector
-	// public class WorldPredictions {
-	// 	public string timestamp;
-	// 	public List<WorldPrediction> predictions = new List<WorldPrediction> ();
+		public PredBox3D(Prediction pred, Vector3 p1, Vector3 p2,
+			Vector3 cen)
+		: base(pred.className, pred.confidence)
+		{
+			this.xmin = (int)p1.x;
+			this.ymin = (int)p1.y;
+			this.zmin = (int)p1.z;
 
-	// 	public WorldPredictions(string ts) {
-	// 		this.timestamp = ts;
-	// 	}
+			this.xmax = (int)p2.x;
+			this.ymax = (int)p2.y;
+			this.zmax = (int)p2.z;
 
-	// 	public void Add(WorldPrediction wp) {
-	// 		predictions.Add(wp);
-	// 	}
-
-	// 	public void RemoveAll(HashSet<string> toRemove) {
-	// 		predictions.RemoveAll(item => toRemove.Contains(item.label));
-	// 	}
-	// }
+			this.xcen = (int)cen.x;
+			this.ycen = (int)cen.y;
+			this.zcen = (int)cen.z;
+		}
+	}
 
 	public class ImageToWorldProjector {
 		private LayerMask hitmask;
@@ -206,13 +201,7 @@ namespace Recaug
 		public bool ToWorld(ref Matrix4x4 camMat, ref Matrix4x4 projMat,
 			Vector2 point2D, out Vector3 point3D)
 		{
-			// Debug.LogFormat("[ToWorld] Input: {0}, Res: W:{1}, H:{2}",
-			// 	point2D.ToString(), resolution.width, resolution.height);
-			// Debug.LogFormat("[ToWorld] CamMat: {0}", camMat.ToString());
-			// Debug.LogFormat("[ToWorld] ProjMat: {0}", projMat.ToString());
-
 			Vector3 from = camMat.GetColumn(3);
-			// Debug.LogFormat("[ToWorld] Ray From Point: {0}", from.ToString());
 			Vector3 rayDirection = LocatableCameraUtils.PixelCoordToWorldCoord(
 				camMat, projMat, resolution, point2D);
 			RaycastHit hitInfo;
@@ -221,7 +210,6 @@ namespace Recaug
 			point3D = new Vector3();
 			if (isHit)
 			{
-				// Debug.LogFormat("[ToWorld] Hit (no delta): {0}", hitInfo.point.ToString());
 				Vector3 towardsUser = (Camera.main.transform.position - hitInfo.point).normalized;
 				point3D = hitInfo.point + (towardsUser * delta);
 			}
@@ -247,107 +235,27 @@ namespace Recaug
 			return points3D.Count != 0;
 		}
 
-		// public bool ToWorldPoint(ref Matrix4x4 camera2World,
-		// 	ref Matrix4x4 projection, Vector2 imgPoint, out Vector3 worldPoint)
-		// {
-		// 	Vector3 from = camera2World.GetColumn(3);
-		// 	Vector3 rayDirection = LocatableCameraUtils.PixelCoordToWorldCoord(
-		// 		camera2World, projection, resolution, imgPoint);
-		// 	RaycastHit hitInfo;
-		// 	bool isHit = Physics.Raycast(from, rayDirection, out hitInfo,
-		// 		Mathf.Infinity, hitmask);
-		// 	worldPoint = new Vector3();
-		// 	if (isHit) {
-		// 		Vector3 towardsUser = (Camera.main.transform.position - hitInfo.point).normalized;
-		// 		worldPoint = hitInfo.point + (towardsUser * delta);
-		// 	}
-		// 	return isHit;
-		// }
+		public bool ToWorld(ref Matrix4x4 camMat, ref Matrix4x4 projMat,
+			List<PredBox2D> boxes2D, out List<PredBox3D> boxes3D)
+		{
+			boxes3D = new List<PredBox3D>();
+			// var filtered = points2D.Where(p => toExclude.Contains(p.className));
+			foreach(PredBox2D box in boxes2D)
+			{
+				Vector3 min, max, cen;
+				bool minHit = ToWorld(ref camMat, ref projMat,
+					new Vector2(box.xmin, box.ymin), out min);
+				bool maxHit = ToWorld(ref camMat, ref projMat,
+					new Vector2(box.xmax, box.ymax), out max);
+				bool cenHit = ToWorld(ref camMat, ref projMat,
+					new Vector2(box.xcen, box.ycen), out cen);
 
-		// public List<PredPoint3D> ToWorldPredictions(ref Matrix4x4 camera2World,
-		// 	ref Matrix4x4 projection, List<PredPoint2D> imagePredictions)
-		// {
-		// 	string ts = System.DateTime.Now.Ticks.ToString();
-		// 	WorldPredictions worldPreds = new WorldPredictions(ts);
-		// 	foreach(ImagePrediction p in imgPreds.labels) {
-		// 		if (toExclude.Contains(p.className)) {
-		// 			continue;
-		// 		}
-		// 		Vector2 imgPoint = new Vector2(p.xcen, p.ycen);
-		// 		Vector3 worldPoint;
-		// 		GameObject worldObject = ToWorldSurface(ref camera2World,
-		// 			ref projection, imgPoint, out worldPoint);
-		// 		if (worldObject != null) {
-		// 			var wp = new WorldPrediction(p.className, worldPoint, 
-		// 				worldObject);
-		// 			wp.color = new Color(p.cen_r, p.cen_g, p.cen_b);
-		// 			worldPreds.Add(wp);
-		// 		}
-		// 	}
-		// 	return worldPreds;
-		// }
-
-		// public WorldPredictions ToWorldPredictions(ref Matrix4x4 camera2World,
-		// 	ref Matrix4x4 projection, ImagePredictions imgPreds)
-		// { 
-		// 	string ts = System.DateTime.Now.Ticks.ToString();
-		// 	WorldPredictions worldPreds = new WorldPredictions(ts);
-		// 	foreach(ImagePrediction p in imgPreds.labels) {
-		// 		if (toExclude.Contains(p.className)) {
-		// 			continue;
-		// 		}
-		// 		Vector2 imgPoint = new Vector2(p.xcen, p.ycen);
-		// 		Vector3 worldPoint;
-		// 		bool hasWorldPoint = ToWorldPoint(ref camera2World, ref projection,
-		// 			imgPoint, out worldPoint);
-		// 		if (hasWorldPoint) {
-		// 			worldPreds.Add(new WorldPrediction(p.className, worldPoint));
-		// 		}
-		// 	}
-		// 	return worldPreds;
-		// }
-
-		// public GameObject ToWorldSurface(ref Matrix4x4 camera2World,
-		// 	ref Matrix4x4 projection, Vector2 imgPoint, out Vector3 worldPoint)
-		// {
-		// 	Vector3 from = camera2World.GetColumn(3);
-		// 	Vector3 rayDirection = LocatableCameraUtils.PixelCoordToWorldCoord(
-		// 		camera2World, projection, resolution, imgPoint);
-		// 	RaycastHit hitInfo;
-		// 	bool isHit = Physics.Raycast(from, rayDirection, out hitInfo,
-		// 		Mathf.Infinity, hitmask);
-		// 	worldPoint = new Vector3();
-		// 	GameObject res = null;
-		// 	if (isHit) {
-		// 		Vector3 towardsUser = (Camera.main.transform.position - hitInfo.point).normalized;
-		// 		worldPoint = hitInfo.point + (towardsUser * delta);
-		// 		res = hitInfo.collider.gameObject;
-		// 	}
-		// 	return res;
-		// }
-
-		// public WorldPredictions ToWorldPredictions(ref Matrix4x4 camera2World,
-		// 	ref Matrix4x4 projection, ImagePredictions imgPreds)
-		// {
-		// 	string ts = System.DateTime.Now.Ticks.ToString();
-		// 	WorldPredictions worldPreds = new WorldPredictions(ts);
-		// 	foreach(ImagePrediction p in imgPreds.labels) {
-		// 		if (toExclude.Contains(p.className)) {
-		// 			continue;
-		// 		}
-		// 		Vector2 imgPoint = new Vector2(p.xcen, p.ycen);
-		// 		Vector3 worldPoint;
-		// 		GameObject worldObject = ToWorldSurface(ref camera2World,
-		// 			ref projection, imgPoint, out worldPoint);
-		// 		if (worldObject != null) {
-		// 			var wp = new WorldPrediction(p.className, worldPoint, 
-		// 				worldObject);
-		// 			wp.color = new Color(p.cen_r, p.cen_g, p.cen_b);
-		// 			worldPreds.Add(wp);
-		// 		}
-		// 	}
-		// 	return worldPreds;
-		// }
-
+				if (minHit && maxHit && cenHit)
+				{
+					boxes3D.Add(new PredBox3D(box, min, max, cen));
+				}
+			}
+			return boxes3D.Count != 0;
+		}
 	}
 }

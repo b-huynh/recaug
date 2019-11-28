@@ -13,6 +13,10 @@ namespace Recaug
         // Unity geometry components like meshes and colliders.
         public List<GameObject> gameObjects;
 
+        public Vector3 extentsMin;
+        public Vector3 extentsMax;
+        public Vector3 extentsCenter;
+
         public ObjectGeometry(int capacity)
         {
             points = new CircularBuffer<PredPoint3D>(capacity);
@@ -36,7 +40,7 @@ namespace Recaug
             private set {}
         }
 
-        private ObjectGeometry geometry;
+        public ObjectGeometry geometry;
         private GameObject gameObject; // An empty gameObject for convenience.
 
         public ObjectRegistration(string className, float confidence,
@@ -54,6 +58,13 @@ namespace Recaug
         public void UpdateGeometry(PredPoint3D point)
         {
             geometry.points.PushBack(point);
+        }
+
+        public void UpdateExtents(PredBox3D box)
+        {
+            geometry.extentsMin = new Vector3(box.xmin, box.ymin, box.zmin);
+            geometry.extentsMax = new Vector3(box.xmax, box.ymax, box.zmax);
+            geometry.extentsCenter = new Vector3(box.xcen, box.ycen, box.zcen);
         }
 
         public void Destroy()

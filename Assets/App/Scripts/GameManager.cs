@@ -17,7 +17,7 @@ public class GameManager : Singleton<GameManager>
     private Dictionary<int, App> apps;
 
     // Location of config file
-    private string configHost = "192.168.100.233 ";
+    private string configHost = "192.168.100.233";
     private string configPort = "8080";
     private string configURL
     {
@@ -31,6 +31,7 @@ public class GameManager : Singleton<GameManager>
     protected override void Awake()
     {
         base.Awake();
+        Debug.Log("Loading Config from: " + configURL);
         Config.LoadHTTP(configURL);
         
         RecaugClient.Instance.Init(Config.Params.Recaug);

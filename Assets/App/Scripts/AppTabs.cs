@@ -7,74 +7,104 @@ using HoloToolkit.Unity;
 public class AppTabs : Singleton<AppTabs>
 {
     public int currentApp  { get; private set; } = 1;
+    public List<GameObject> appIcons;
+    public GameObject activeIndicator, focusIndicator;
 
-    // Indicator Animation State
-    public float animateSpeed = 1.0f;
-    private bool isAnimating = false;
-    private Transform animateStart;
-    private Transform animateEnd;
-    private float animateStartTime;
-    private float animateDistance;
-
-    public GameObject leftTab, rightTab, activeIndicator;
+    private bool appDrawerOpen = false;
     private Renderer[] renderers;
 
     // Start is called before the first frame update
     void Start()
     {
-        animateDistance = Vector3.Distance(
-            leftTab.transform.position, rightTab.transform.position);
-        
+        // animateDistance = Vector3.Distance(
+        //     leftTab.transform.position, rightTab.transform.position);
+
         renderers = GetComponentsInChildren<MeshRenderer>();
-        DisableRenderers();
+        SetRenderActive(false);
+        focusIndicator.SetActive(false);
+
+        
+        foreach(GameObject icon in appIcons)
+        {
+            icon.GetComponent<UIFocusable>().OnSelect += delegate {
+                int selectID =
+                    appIcons.IndexOf(UIFocusable.current.gameObject) + 1;
+                Debug.Log("Selected: " + selectID.ToString());
+                if (appDrawerOpen)
+                {
+                    SwitchApp(selectID);
+                }
+            };
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isAnimating)
+        // if (isAnimating)
+        // {
+        //     float distCovered = (Time.time - animateStartTime) * animateSpeed;
+        //     float distFraction = distCovered / animateDistance;
+        //     activeIndicator.transform.position = Vector3.Lerp(
+        //         animateStart.position, animateEnd.position, distFraction);
+        //     if (distFraction >= 1.0f)
+        //     {
+        //         SetRenderActive(false);
+        //         isAnimating = false;
+        //     }
+        // }
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            float distCovered = (Time.time - animateStartTime) * animateSpeed;
-            float distFraction = distCovered / animateDistance;
-            activeIndicator.transform.position = Vector3.Lerp(
-                animateStart.position, animateEnd.position, distFraction);
-            if (distFraction >= 1.0f)
+            if (!appDrawerOpen || UIFocusable.current == null)
             {
-                DisableRenderers();
-                isAnimating = false;
+                appDrawerOpen = !appDrawerOpen;
+                SetRenderActive(appDrawerOpen);
             }
+        }
+
+        if (UIFocusable.current != null && appDrawerOpen)
+        {
+            focusIndicator.SetActive(true);
+            focusIndicator.transform.position = UIFocusable.current.transform.position;
+        }
+        else
+        {
+            focusIndicator.SetActive(false);
         }
     }
 
     public void SwitchApp(int appID)
     {
-        Debug.Assert(appID >= 1 && appID <= 2);
         if (currentApp != appID)
         {
-            currentApp = appID;   
-            var endpoint = appID == 1 ? leftTab.transform : rightTab.transform;
-            TriggerAnimation(endpoint);
+            var start = appIcons[currentApp - 1].transform.position;
+            var end = appIcons[appID - 1].transform.position;
+
+            var animation = activeIndicator.GetComponent<SlideAnimation>();
+            animation.animateStart = start;
+            animation.animateEnd = end;
+            animation.OnAnimationStop += delegate { 
+                SetRenderActive(false);
+                appDrawerOpen = false;
+            };
+            animation.StartAnimation();
+
+            currentApp = appID;
         }
     }
 
-    public void TriggerAnimation(Transform endpoint)
-    {
-        animateStart = activeIndicator.transform;
-        animateEnd = endpoint;
-        animateStartTime = Time.time;
-        EnableRenderers();
-        isAnimating = true;
-    }
+    // private void TriggerAnimation(Transform endpoint)
+    // {
+    //     animateStart = activeIndicator.transform;
+    //     animateEnd = endpoint;
+    //     animateStartTime = Time.time;
+    //     SetRenderActive(true);
+    //     isAnimating = true;
+    // }
 
-    private void DisableRenderers()
+    private void SetRenderActive(bool val)
     {
         foreach(var renderer in renderers)
-            renderer.enabled = false;
-    }
-
-    private void EnableRenderers()
-    {
-        foreach(var renderer in renderers)
-            renderer.enabled = true;
+            renderer.enabled = val;
     }
 }

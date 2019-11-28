@@ -5,22 +5,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class QuizFocusable : MonoBehaviour, IFocusable
+public class UIFocusable : MonoBehaviour, IFocusable
 {
-    public Color focusColor; // Color to display when focused on
-    private Color defaultColor;
+    // public Color focusColor; // Color to display when focused on
+    // private Color defaultColor;
 
 	public float selectDuration = 0.0f; // Focus-to-select duration, 0.0f to disable.
     private float selectTimer = 0.0f;
-    private static QuizFocusable current;
-
-    public int responseID;
-    public event Action<int> OnSelect = delegate {};
+    public static UIFocusable current;
+    public event Action<GameObject> OnSelect = delegate {};
     
     // Start is called before the first frame update
     void Awake()
     {
-        defaultColor = GetComponent<Renderer>().material.color;
+        // defaultColor = GetComponent<Renderer>().material.color;
     }
 
     // Update is called once per frame
@@ -30,7 +28,7 @@ public class QuizFocusable : MonoBehaviour, IFocusable
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                OnSelect(responseID);
+                OnSelect(gameObject);
             }
 
             if (selectDuration > 0.0f)
@@ -39,7 +37,7 @@ public class QuizFocusable : MonoBehaviour, IFocusable
                 if (selectTimer >= selectDuration)
                 {
                     selectTimer = 0.0f;
-                    OnSelect(responseID);
+                    OnSelect(gameObject);
                 }
             }
         }
@@ -48,13 +46,13 @@ public class QuizFocusable : MonoBehaviour, IFocusable
     public void OnFocusEnter()
 	{
         current = this;
-        GetComponent<Renderer>().material.color = Color.blue;
+        // GetComponent<Renderer>().material.color = Color.blue;
 	}
 
 	public void OnFocusExit()
 	{
         current = null;
-        GetComponent<Renderer>().material.color = defaultColor;
+        // GetComponent<Renderer>().material.color = defaultColor;
         selectTimer = 0.0f;
 	}
 }

@@ -72,7 +72,7 @@ namespace Recaug.Client
         void Update()
         {
             // Calculate Nearby
-            float nearbyBoundary = 1.0f;
+            float nearbyBoundary = 1.25f;
             var nearby = ObjectRegistry.Instance.Nearby(
                 Camera.main.transform.position, nearbyBoundary);
             foreach(var kv in nearby)
@@ -144,15 +144,6 @@ namespace Recaug.Client
                 LocatableCameraUtils.ConvertFloatArrayToMatrix4x4(
                     message.DecodedProjectionMatrix());
 
-            // Debug.LogFormat("Received Message: {0}", JsonUtility.ToJson(message));
-
-            // Debug.Log("PM Predictions Length: " + message.predictions.Count.ToString());
-
-            // foreach(var p in message.predictions)
-            // {
-            //     Debug.LogFormat("Predicted {0}, {1},{2}", p.className, p.xcen.ToString(), p.ycen.ToString());
-            // }
-
             List<PredPoint2D> points2D = message.predictions.Select(p => 
                 new PredPoint2D(
                     p.className,
@@ -161,35 +152,65 @@ namespace Recaug.Client
                     new Color(p.cen_r, p.cen_g, p.cen_b))
             ).ToList();
 
-            // Debug.Log("points2D size: " + points2D.Count.ToString());
-
-            // foreach(var p in points2D)
-            //     Debug.LogFormat("Predict {0} at {1}", p.className, p.position);
-
-
-
             ThreadUtils.Instance.InvokeOnMainThread(() =>
             {
                 List<PredPoint3D> points3D;
                 bool isHit = projector.ToWorld(
                     ref camMat, ref projMat, points2D, out points3D);
 
+                // Debug.Log("Step 1");
+
+                // List<PredBox3D> boxes3D;
+                // bool isHit = projector.ToWorld(
+                //     ref camMat, ref projMat, message.predictions, out boxes3D);
+
+                // foreach(var bbb in boxes3D)
+                // {
+                //     Debug.LogFormat("box: {0}, {1}, {2}", bbb.xcen, bbb.ycen, bbb.zcen);
+                // }
+
+
                 if(isHit)
                 {
-                    // Debug.Log("Hit...");
-                    // foreach(var p in points3D)
-                    //     Debug.LogFormat("Hit {0} at {1}", p.className, p.position);
+                    // Debug.Log("Step 2");
+                    // List<PredPoint3D> points3D = new List<PredPoint3D>();
+                    // foreach(var box in boxes3D)
+                    // {
+                    //     points3D.Add(
+                    //         new PredPoint3D(
+                    //             box, new Vector3(box.xcen, box.ycen, box.zcen)));
+                    // }
+
+                    // Debug.Log("Step 3");
 
                     // Filter/aggregate prediction results, Object 'Discovery'
                     List<PredPoint3D> discovered = filter.Filter(points3D);
-                    
-                    // foreach(var p in discovered)
-                    //     Debug.LogFormat("Discover {0} at {1}", p.className, p.position);
+
+                    // Debug.Log("Step 4");
 
                     // Update registry with discovered objects
-                    foreach(PredPoint3D p in discovered)
-                        ObjectRegistry.Instance.Register(p.className, p.position);
-                
+                    foreach(PredPoint3D point in discovered)
+                    {
+                        
+                        // Debug.LogFormat("Points3D: {0}, {1}, {2}", point.x, point.y, point.z);
+                        // Debug.Log("Step 5");
+                        // int idx = points3D.FindIndex(p => 
+                        //     p.x == point.x && p.y == point.y && p.z == point.z
+                        // );
+                        // var b = boxes3D[idx];
+
+                        // Debug.LogFormat("Index: {0}", idx);
+
+                        // Debug.Log("Step 6");
+                        var registration = ObjectRegistry.Instance.Register(
+                            point.className, point.position);
+                        
+                        // if (registration != null)
+                        // {
+                        //     registration.UpdateExtents(b);
+                        // }
+                    }
+
                     // TODO: Tracking
                 }
             });

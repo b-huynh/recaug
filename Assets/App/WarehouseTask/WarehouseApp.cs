@@ -19,6 +19,8 @@ public class WarehouseApp : App
     void Update()
     {
         timer += Time.deltaTime;
-        display.text = timer.ToString();
+        string prompt = string.Format("\n   [EVEREST] Employee View\n   Work timer: {0:0.00}\n   Fetch:\n   -> #A-125 (Pillow)", timer);
+        // display.text = timer.ToString();
+        display.text = prompt;
     }
 }
