@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4465782, g: 0.49641252, b: 0.5748167, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -124,6 +124,90 @@ Camera:
     type: 3}
   m_PrefabInstance: {fileID: 1618594555}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &808758824
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3696156770482273613, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_Name
+      value: OpenWithIndicator
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -5.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 3693478529308257997, guid: 315e96ed20e47954b951d668544dd396,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.05
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 315e96ed20e47954b951d668544dd396, type: 3}
 --- !u!1 &934306348
 GameObject:
   m_ObjectHideFlags: 0
@@ -153,7 +237,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7d7c7f31912c53498b3860b816fa1cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  appID: 1
+  appID: 0
   display: {fileID: 3793365599759137965}
 --- !u!4 &934306350
 Transform:
@@ -762,7 +846,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e30f3b7c54b088147a6fb111a9e676c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  appID: 2
+  appID: 1
   discoveryPrefab: {fileID: 3919829259996447279, guid: 89395ec937451ee47b430dc891bc6ba2,
     type: 3}
   objectTagPrefab: {fileID: 7225996299567637764, guid: 2c24d54758204a645a36a5e9575758b8,

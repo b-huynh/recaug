@@ -6,7 +6,7 @@ using HoloToolkit.Unity;
 
 public class AppTabs : Singleton<AppTabs>
 {
-    public int currentApp  { get; private set; } = 1;
+    public int currentApp  { get; private set; } = 0;
     public List<GameObject> appIcons;
     public GameObject activeIndicator, focusIndicator;
 
@@ -28,11 +28,10 @@ public class AppTabs : Singleton<AppTabs>
         {
             icon.GetComponent<UIFocusable>().OnSelect += delegate {
                 int selectID =
-                    appIcons.IndexOf(UIFocusable.current.gameObject) + 1;
-                Debug.Log("Selected: " + selectID.ToString());
+                    appIcons.IndexOf(UIFocusable.current.gameObject);
                 if (appDrawerOpen)
                 {
-                    SwitchApp(selectID);
+                    GameManager.Instance.SwitchApp(selectID);
                 }
             };
         }
@@ -73,12 +72,18 @@ public class AppTabs : Singleton<AppTabs>
         }
     }
 
-    public void SwitchApp(int appID)
+    public void SwitchApp(int appID, bool silent = true)
     {
         if (currentApp != appID)
         {
-            var start = appIcons[currentApp - 1].transform.position;
-            var end = appIcons[appID - 1].transform.position;
+            if (!silent)
+            {
+                // Visually announce app switch
+                SetRenderActive(true);
+            }
+
+            var start = appIcons[currentApp].transform.position;
+            var end = appIcons[appID].transform.position;
 
             var animation = activeIndicator.GetComponent<SlideAnimation>();
             animation.animateStart = start;
@@ -87,6 +92,7 @@ public class AppTabs : Singleton<AppTabs>
                 SetRenderActive(false);
                 appDrawerOpen = false;
             };
+            Debug.Log("Starting Animation");
             animation.StartAnimation();
 
             currentApp = appID;

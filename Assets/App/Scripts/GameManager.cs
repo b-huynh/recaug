@@ -48,12 +48,12 @@ public class GameManager : Singleton<GameManager>
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            SwitchApp(1);
+            SwitchApp(0);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            SwitchApp(2);
+            SwitchApp(1);
         }
 
         if (Input.GetKeyDown(KeyCode.R))
@@ -103,7 +103,7 @@ public class GameManager : Singleton<GameManager>
 
         apps[currAppID].Suspend();
         apps[appID].Resume();
-        AppTabs.Instance.SwitchApp(appID);
+        AppTabs.Instance.SwitchApp(appID, false);
         currAppID = appID;
         return true;
     }
