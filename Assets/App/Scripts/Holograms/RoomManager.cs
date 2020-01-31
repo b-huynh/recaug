@@ -19,11 +19,6 @@ public class RoomManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha9))
-        {
-            Debug.Log("Attempting to save current room mesh");
-            SaveRoom();
-        }       
     }
 
     public void SaveRoom()

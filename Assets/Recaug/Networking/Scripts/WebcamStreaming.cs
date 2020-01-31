@@ -23,7 +23,11 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
     private byte[] _latestImageBytes;
 
     // Streaming over network
-    // public bool streaming = false;
+    private bool streaming = false;
+    private CameraParameters cameraParams;
+
+    // Debugging in unity editor
+    private RenderTexture debugRT;
 
     // This struct store frame related data
     public class SampleStruct
@@ -38,6 +42,12 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
         _spatialCoordinateSystemPtr = UnityEngine.XR.WSA.WorldManager.GetNativeISpatialCoordinateSystemPtr();
 
         CameraStreamHelper.Instance.GetVideoCaptureAsync(OnVideoCaptureCreated);
+
+// #if !WINDOWS_UWP
+//         debugRT = new RenderTexture(
+//             Camera.main.pixelWidth, Camera.main.pixelHeight, 24);
+//         // Camera.main.targetTexture = debugRT;
+// #endif
 	}
 
     // TODO: Remove this. Its debug only;
@@ -91,6 +101,41 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
 
         //     Debug.LogFormat("Local Hit Point: {0}", outPoint.ToString());
         // }
+
+
+        /* KEEP FOR FUTURE */
+// #if !WINDOWS_UWP
+//         RenderTexture currentRT = RenderTexture.active;
+//         Camera.main.targetTexture = debugRT;
+//         RenderTexture.active = debugRT;
+
+//         Camera.main.Render();
+
+//         Texture2D cameraImage = new Texture2D(Camera.main.pixelWidth,
+//             Camera.main.pixelHeight, TextureFormat.RGB24, false);
+//         cameraImage.ReadPixels(new Rect(0, 0, Camera.main.targetTexture.width, Camera.main.targetTexture.height), 0, 0);
+//         cameraImage.Apply();
+
+//         RenderTexture.active = currentRT;
+//         Camera.main.targetTexture = null;
+
+//         float[] fakeCamMatrix = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+//         float[] fakeProjMatrix = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+//         RecaugClient.Instance.OnFrameReceived(cameraImage, fakeCamMatrix, fakeProjMatrix);
+// #endif
+
+        if (Input.GetKeyDown(KeyCode.RightShift))
+        {
+            if (streaming)
+            {
+                _videoCapture.StopVideoModeAsync(OnVideoModeStopped);
+            }
+            else
+            {
+                _videoCapture.StartVideoModeAsync(cameraParams, OnVideoModeStarted);
+            }
+        }
     }
 
     protected override void OnDestroy()
@@ -119,7 +164,7 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
         _resolution = CameraStreamHelper.Instance.GetLowestResolution();
         float frameRate = CameraStreamHelper.Instance.GetHighestFrameRate(_resolution);
 
-        CameraParameters cameraParams = new CameraParameters();
+        cameraParams = new CameraParameters();
         cameraParams.cameraResolutionHeight = _resolution.height;
         cameraParams.cameraResolutionWidth = _resolution.width;
         cameraParams.frameRate = Mathf.RoundToInt(frameRate);
@@ -136,11 +181,29 @@ public class WebcamStreaming : Singleton<WebcamStreaming> {
             Debug.LogWarning("Could not start video mode.");
             return;
         }
+        streaming = true;
         Debug.Log("Video capture started.");
+    }
+
+    private void OnVideoModeStopped(VideoCaptureResult result)
+    {
+        if (result.success == false)
+        {
+            Debug.LogWarning("Could not stop video mode.");
+            return;
+        }
+        streaming = false;
+        Debug.Log("Video capture stopped.");
     }
 
     private void OnFrameSampleAcquired(VideoCaptureSample sample)
     {
+        if (!streaming)
+        {
+            // We shouldn't be doing anything then... Shouldn't even be here...
+            return;
+        }
+
         if (_latestImageBytes == null || _latestImageBytes.Length < sample.dataLength)
             _latestImageBytes = new byte[sample.dataLength];
 

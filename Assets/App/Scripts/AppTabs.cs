@@ -1,116 +1,191 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 using HoloToolkit.Unity;
+using HoloToolkit.Unity.InputModule;
 
 public class AppTabs : Singleton<AppTabs>
 {
-    public int currentApp  { get; private set; } = 0;
     public List<GameObject> appIcons;
-    public GameObject activeIndicator, focusIndicator;
+    public GameObject activeIndicator;
 
-    private bool appDrawerOpen = false;
+    private bool requestDrawerOpen = false;
+    private bool requestDrawerClose = false;
+
+    public bool appDrawerOpen = false;
     private Renderer[] renderers;
+
+    private ObjectCursor gazeCursor;
 
     // Start is called before the first frame update
     void Start()
     {
-        // animateDistance = Vector3.Distance(
-        //     leftTab.transform.position, rightTab.transform.position);
-
         renderers = GetComponentsInChildren<MeshRenderer>();
-        SetRenderActive(false);
-        focusIndicator.SetActive(false);
+        // SetRenderActive(false);
 
-        
         foreach(GameObject icon in appIcons)
         {
-            icon.GetComponent<UIFocusable>().OnSelect += delegate {
-                int selectID =
-                    appIcons.IndexOf(UIFocusable.current.gameObject);
-                if (appDrawerOpen)
-                {
-                    GameManager.Instance.SwitchApp(selectID);
-                }
-            };
+            icon.GetComponent<UIFocusable>().OnSelect += OnAppSelect;
+        }
+
+        SetInteractive(false);
+
+        gazeCursor = GameObject.Find("Cursor").GetComponent<ObjectCursor>();
+
+        // GameManager.Instance.GetComponent<ClickHandler>().OnLongPress += 
+            // OnLongPress;
+        // GameManager.Instance.GetComponent<ClickHandler>().LongPressHandlers.Add(
+        //     gameObject);
+    }
+
+    void OnAppSelect(GameObject iconObject)
+    {
+        int selectedID = iconObject.GetComponent<AppIcon>().AppID;
+        if (appDrawerOpen)
+        {
+            // GameManager.Instance.SwitchApp(selectedID, false);
+            GameManager.Instance.RequestAppFocus(selectedID);
+            RequestDrawerClose();
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        // if (isAnimating)
-        // {
-        //     float distCovered = (Time.time - animateStartTime) * animateSpeed;
-        //     float distFraction = distCovered / animateDistance;
-        //     activeIndicator.transform.position = Vector3.Lerp(
-        //         animateStart.position, animateEnd.position, distFraction);
-        //     if (distFraction >= 1.0f)
-        //     {
-        //         SetRenderActive(false);
-        //         isAnimating = false;
-        //     }
-        // }
-        if (Input.GetKeyDown(KeyCode.Space))
+        // Maintain activeIndicator position
+        if (GameManager.Instance.currAppID != -1)
         {
-            if (!appDrawerOpen || UIFocusable.current == null)
-            {
-                appDrawerOpen = !appDrawerOpen;
-                SetRenderActive(appDrawerOpen);
-            }
+            activeIndicator.transform.position =
+                appIcons[GameManager.Instance.currAppID].transform.position;
         }
 
-        if (UIFocusable.current != null && appDrawerOpen)
+        if (requestDrawerOpen)
         {
-            focusIndicator.SetActive(true);
-            focusIndicator.transform.position = UIFocusable.current.transform.position;
+            OpenAppDrawer();
+            requestDrawerOpen = false;
         }
-        else
+        if (requestDrawerClose)
         {
-            focusIndicator.SetActive(false);
+            CloseAppDrawer();
+            requestDrawerClose = false;
+        }
+
+        if (GameManager.Instance.LongPressed)
+        {
+            if (!appDrawerOpen)
+            {
+                RequestDrawerOpen();
+            }
+            else
+            {
+                RequestDrawerClose();
+            }
         }
     }
 
-    public void SwitchApp(int appID, bool silent = true)
+    public void OnLongPress()
     {
-        if (currentApp != appID)
+        if (!appDrawerOpen)
         {
-            if (!silent)
-            {
-                // Visually announce app switch
-                SetRenderActive(true);
-            }
+            RequestDrawerOpen();
+        }
+        else
+        {
+            RequestDrawerClose();
+        }
+    }
 
-            var start = appIcons[currentApp].transform.position;
+    public void RequestAppSwitch(int appID, bool animate = false, Action callback = null)
+    {
+        if (animate)
+        {
+            var start = 
+                appIcons[GameManager.Instance.currAppID].transform.position;
             var end = appIcons[appID].transform.position;
 
             var animation = activeIndicator.GetComponent<SlideAnimation>();
             animation.animateStart = start;
             animation.animateEnd = end;
-            animation.OnAnimationStop += delegate { 
-                SetRenderActive(false);
-                appDrawerOpen = false;
+            animation.OnAnimationStop += delegate {
+                if (callback != null)
+                {
+                    callback();
+                }
             };
-            Debug.Log("Starting Animation");
             animation.StartAnimation();
-
-            currentApp = appID;
+        }
+        else
+        {
+            activeIndicator.transform.position =
+                appIcons[appID].transform.position;
+            if (callback != null)
+            {
+                callback();
+            }
         }
     }
 
-    // private void TriggerAnimation(Transform endpoint)
-    // {
-    //     animateStart = activeIndicator.transform;
-    //     animateEnd = endpoint;
-    //     animateStartTime = Time.time;
-    //     SetRenderActive(true);
-    //     isAnimating = true;
-    // }
-
-    private void SetRenderActive(bool val)
+    public void RequestDrawerOpen()
     {
+        requestDrawerOpen = true;
+    }
+
+    public void RequestDrawerClose()
+    {
+        requestDrawerClose = true;
+    }
+
+    private void OpenAppDrawer()
+    {
+        // Determine position of app drawer
+        Vector3 start = Camera.main.transform.position;
+        start += Camera.main.transform.forward * 2.0f;
+        start -= Camera.main.transform.up * 2.0f;
+
+        Vector3 end = Camera.main.transform.position;
+        end += Camera.main.transform.forward * 2.0f;
+
+        // Set up SlideAnimation
+        var animation = GetComponent<SlideAnimation>();
+        animation.animateSpeed = 3.0f;
+        animation.animateStart = start;
+        animation.animateEnd = end;
+        animation.OnAnimationStop += delegate {
+            appDrawerOpen = true;
+        };
+
+        // Maintain visual consistency
+        transform.position = start;
+        // SetRenderActive(true);
+        SetInteractive(true);
+        animation.StartAnimation();
+    }
+
+    private void CloseAppDrawer()
+    {
+        // SetRenderActive(false);
+        SetInteractive(false);
+        appDrawerOpen = false;
+    }
+
+    public void SetRenderActive(bool val)
+    {
+        // Dirty fix this.
         foreach(var renderer in renderers)
             renderer.enabled = val;
+
+        foreach(GameObject icons in appIcons)
+            icons.SetActive(val);
+        activeIndicator.SetActive(val);
+    }
+
+    public void SetInteractive(bool val)
+    {
+        transform.Find("App Header").gameObject.SetActive(val);
+        transform.Find("ActiveIndicator").gameObject.SetActive(val);
+        transform.Find("FocusableGroup").gameObject.SetActive(val);
+        // GetComponentInChildren<UIFocusableGroup>().enabled = val;
     }
 }

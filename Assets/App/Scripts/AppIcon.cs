@@ -5,10 +5,7 @@ using UnityEngine;
 
 // This class stores information about how to display AppIcons
 public class AppIcon : MonoBehaviour
-{
-    public List<Material> AppIconMaterials;
-
-
+{   
     public int _appID;
     public int AppID
     {
@@ -20,24 +17,23 @@ public class AppIcon : MonoBehaviour
         }
     }
 
+    private App appRef;
+
     private void SetDisplayProperties()
     {
-        GetComponent<MeshRenderer>().material = 
-            AppIconMaterials[Math.Min(_appID, AppIconMaterials.Count - 1)];
+        appRef = GameManager.Instance.GetApp(AppID);
+        GetComponent<MeshRenderer>().material = appRef.appLogo;
+        transform.Find("AppName").GetComponent<TextMesh>().text = appRef.appName;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        GetComponent<UIFocusable>().OnSelect += delegate {
-            GameManager.Instance.SwitchApp(this.AppID);
-        };
         SetDisplayProperties();
     }
 
     // Update is called once per frame
     void Update()
     {
-        SetDisplayProperties();
     }
 }

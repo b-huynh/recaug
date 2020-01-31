@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -18,48 +19,59 @@ namespace Recaug
 	*/ 
 	public class ObjectRegistry : Singleton<ObjectRegistry>
 	{
-		public class ObjectRegisteredEvent : UnityEvent<ObjectRegistration> {}
-		public class ObjectRemovedEvent : UnityEvent<ObjectRegistration> {}
-
-		public ObjectRegisteredEvent objectRegisteredEvent;
-		public ObjectRemovedEvent objectRemovedEvent;
+		public event Action<ObjectRegistration> OnRegistered = delegate {};
+		public event Action<ObjectRegistration> OnRemoved = delegate {};
 
 		public enum Policy { OVERWRITE, FIRST_IN }
 		public Policy policy = Policy.FIRST_IN;
 
-		private Dictionary<string, ObjectRegistration> registry;
+		public GameObject objectPrefab;
+
+		public Dictionary<string, ObjectRegistration> registry;
 
 		protected override void Awake()
 		{
 			base.Awake();
-			
 			registry = new Dictionary<string, ObjectRegistration>();
-			objectRegisteredEvent = new ObjectRegisteredEvent();
-			objectRemovedEvent = new ObjectRemovedEvent();
+			if (objectPrefab == null || 
+				objectPrefab.GetComponent<ObjectRegistration>() == null)
+			{
+				Debug.Log("Invalid ObjectPrefab Assigned!");
+			}
+
+		}
+
+		public void Start()
+		{
 		}
 
 		public void Update() {}
 
 		public ObjectRegistration Register(string name, Vector3 position)
 		{
-			if (policy == Policy.FIRST_IN && Contains(name)) {
+			if (policy == Policy.FIRST_IN && Contains(name))
+			{
 				// Object already registered, return same object
 				return registry[name];
 			}
 
 			// Create Registration
-			registry[name] = new ObjectRegistration(name, 1.0f, position);
-			Debug.LogFormat("Object: {0} registered", name);
+			var obj = GameObject.Instantiate(objectPrefab);
+			var registration = obj.GetComponent<ObjectRegistration>();
+			registration.Init(name, 1.0f, position);
+			registry.Add(name, registration);
+
+			Debug.LogFormat("Object: {0} registered", registration.className);
+			OnRegistered(registration);
 			
-			objectRegisteredEvent.Invoke(registry[name]);
-			return registry[name];
+			return registration;
 		}
 
 		public void Remove(string name)
 		{
 			if (Contains(name))
 			{
-				objectRemovedEvent.Invoke(registry[name]);
+				OnRemoved(registry[name]);
 				registry[name].Destroy();
 				registry.Remove(name);
 			}
@@ -93,7 +105,8 @@ namespace Recaug
 		{
 			foreach(var kv in registry)
 			{
-				Remove(kv.Key);
+				// Remove(kv.Key);
+				kv.Value.gameObject.SetActive(false);
 			}
 			registry.Clear();
 		}

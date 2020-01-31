@@ -5,10 +5,13 @@ using UnityEngine;
 public class App : MonoBehaviour
 {
     public int appID = -1;
-
+    public string appName;
+    public string appDescription;
+    public Material appLogo;
+    public bool running { get; private set; } = false;
     private List<GameObject> linked;
 
-    protected virtual void Start()
+    protected virtual void Awake()
     {
         linked = new List<GameObject>();
         appID = GameManager.Instance.RegisterApp(appID, this);
@@ -21,28 +24,53 @@ public class App : MonoBehaviour
     public void Link(GameObject obj)
     {
         linked.Add(obj);
+        obj.SetActive(running);
     }
 
     public void Unlink(GameObject obj)
     {
+        obj.SetActive(false);
         linked.Remove(obj);
+    }
+
+    public void UnlinkAll()
+    {
+        foreach(var l in linked)
+        {
+            // Unlink(l);
+            l.SetActive(false);
+        }
+        linked.Clear();
     }
 
     public void Resume()
     {
-        foreach(var obj in linked)
-        {
-            obj.SetActive(true);
-        }
-        // gameObject.SetActive(true);
+        SetActiveState(true);
+        running = true;
     }
 
     public void Suspend()
     {
+        SetActiveState(false);
+        running = false;
+    }
+
+    public void SetActiveState(bool active)
+    {
         foreach(var obj in linked)
         {
-            obj.SetActive(false);
+            obj.SetActive(active);
         }
-        // gameObject.SetActive(false);      
+    }
+
+    public void SetRenderState(bool enabled)
+    {
+        foreach(var obj in linked)
+        {
+            foreach(var renderer in obj.GetComponentsInChildren<Renderer>())
+            {
+                renderer.enabled = enabled;
+            }
+        }
     }
 }

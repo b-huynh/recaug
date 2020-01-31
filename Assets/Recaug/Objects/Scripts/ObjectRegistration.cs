@@ -23,9 +23,9 @@ namespace Recaug
             gameObjects = new List<GameObject>(capacity);
         }
     }
-
+    
     // ObjectRegistration contains all the info needed to represent a real object.
-    public class ObjectRegistration
+    public class ObjectRegistration : MonoBehaviour
     {
         public string className;
         public float confidence;
@@ -39,20 +39,24 @@ namespace Recaug
             get { return gameObject.GetInstanceID(); }
             private set {}
         }
-
+        
         public ObjectGeometry geometry;
-        private GameObject gameObject; // An empty gameObject for convenience.
 
-        public ObjectRegistration(string className, float confidence,
-            Vector3 position)
+        public void Start()
         {
-            this.gameObject = new GameObject();
-         
+            this.geometry = new ObjectGeometry(Config.System.GeometryCapacity);
+        }
+
+        public void Update()
+        {
+
+        }
+
+        public void Init(string className, float confidence, Vector3 position)
+        {
             this.className = className;
             this.confidence = confidence;
             this.position = position;
-
-            this.geometry = new ObjectGeometry(Config.System.GeometryCapacity);
         }
 
         public void UpdateGeometry(PredPoint3D point)

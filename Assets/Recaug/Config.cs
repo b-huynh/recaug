@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 using File = UnityEngine.Windows.File;
 
 #if WINDOWS_UWP
@@ -13,6 +14,8 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Web.Http;
 using Windows.Web.Http.Filters;
+#else
+using System.Net.Http;
 #endif
 
 using Recaug.Client;
@@ -46,31 +49,55 @@ public class UIParams
     public int MedianAverageWindow = 5;
 }
 
+
+
 [System.Serializable]
 public class ExperimentParams : ISerializationCallbackReceiver
 {
     public bool SaveLogs = false;
     public Translator.TargetLanguage TargetLanguage;
+    public MultitaskingType Multitasking;
     // public HashSet<string> KnownObjects = new HashSet<string>();
     // public HashSet<string> ValidObjects = new HashSet<string>();
 
 	// INTERNAL IMPLEMENTATION. DO NOT USE.
 	// Serializable types to convert to above member variables.
 	public string _targetLanguage = "English";
+    public string _multitasking = "InSitu";
     // public List<string> _knownObjects = new List<string>();
     // public List<string> _validObjects = new List<string>();
+    
+    public HashSet<string> AppObjects1 = new HashSet<string>();
+    public List<string> _appObjects1 = new List<string>();
+
+    public HashSet<string> AppObjects2 = new HashSet<string>();
+    public List<string> _appObjects2 = new List<string>();
+
+    public HashSet<string> AppObjects3 = new HashSet<string>();
+    public List<string> _appObjects3 = new List<string>();
 
     public void OnBeforeSerialize() {
 		_targetLanguage = TargetLanguage.ToString();
+        _multitasking = Multitasking.ToString();
         // _knownObjects = new List<string>(KnownObjects);
         // _validObjects = new List<string>(ValidObjects);
+
+        _appObjects1 = new List<string>(AppObjects1);
+        _appObjects2 = new List<string>(AppObjects2);
+        _appObjects3 = new List<string>(AppObjects3);
     }
 
     public void OnAfterDeserialize() {
 		TargetLanguage = (Translator.TargetLanguage)System.Enum.Parse(
 			typeof(Translator.TargetLanguage), _targetLanguage);
+        Multitasking = (MultitaskingType)System.Enum.Parse(
+            typeof(MultitaskingType), _multitasking);
         // KnownObjects = new HashSet<string>(_knownObjects);
         // ValidObjects = new HashSet<string>(_validObjects);
+
+        AppObjects1 = new HashSet<string>(_appObjects1);
+        AppObjects2 = new HashSet<string>(_appObjects2);
+        AppObjects3 = new HashSet<string>(_appObjects3);
     }
 }
 
@@ -99,8 +126,15 @@ public static class Config {
         private set {}
     }
 
-	public static void LoadHTTP(string url) {
+	public static bool LoadHTTP(string url) {
+        Debug.Log("Loading Config from: " + url);
+        return LoadHTTPImpl(url);
+	}
+
+
 #if WINDOWS_UWP
+    private static bool LoadHTTPImpl(string url)
+    {
         // Set non-caching behavior
         HttpBaseProtocolFilter filter = new HttpBaseProtocolFilter();
         filter.CacheControl.ReadBehavior = HttpCacheReadBehavior.NoCache;
@@ -116,16 +150,37 @@ public static class Config {
             httpResponse.EnsureSuccessStatusCode();
             httpResponseBody = httpResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             LoadJson(httpResponseBody);
+            return true;
         }
         catch (Exception ex) {
             httpResponseBody = "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message;
             Debug.Log(httpResponseBody);
+            return false;
         }
+    }
 #else
-        Debug.Log("[Config] LoadHTTP not implemented.");
+    private static bool LoadHTTPImpl(string url)
+    {
+        // Debug.Log("[Config] LoadHTTP not implemented.");
+        HttpClient httpClient = new HttpClient();
+        try
+        {
+            HttpResponseMessage response = 
+                httpClient.GetAsync(url).GetAwaiter().GetResult();
+            response.EnsureSuccessStatusCode();
+            string body = 
+                response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            LoadJson(body);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.Log(
+                "Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message);
+            return false;
+        }
+    }
 #endif
-	}
-
   
     public static void LoadPersistantDataPathFile(string filename) {
 		string filepath = Path.Combine(Application.persistentDataPath, filename);

@@ -42,6 +42,12 @@ public class DevWindow : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        var icon = GetComponentInChildren<AppIcon>();
+        if (icon)
+        {
+            icon.AppID = GameManager.Instance.currAppID;
+        }
+
         if (Input.GetKeyDown(KeyCode.Q))
             Toggle("Debug Overlay", ref inDebugHUD);
 
@@ -62,13 +68,13 @@ public class DevWindow : MonoBehaviour
                 {
                     if (c == '\b')
                     { // backspace
-                        Debug.Log("RECEIVED BACKSPACE " + currentCommand);
+                        // Debug.Log("RECEIVED BACKSPACE " + currentCommand);
                         if (currentCommand.Length != 0)
                         {
-                            Debug.Log("CURRENT LENGTH " + currentCommand.Length.ToString());
+                            // Debug.Log("CURRENT LENGTH " + currentCommand.Length.ToString());
                             currentCommand = currentCommand.Substring(0, currentCommand.Length - 1);
                         }
-                        Debug.Log("CURRENT COMMAND: " + currentCommand);
+                        // Debug.Log("CURRENT COMMAND: " + currentCommand);
                     }
                     else if ((c == '\n') || (c == '\r'))
                     { // enter or return
@@ -105,6 +111,8 @@ public class DevWindow : MonoBehaviour
 
     private void DrawCol1()
     {
+        // text1.text = string.Format("\n   App: [{0}]",
+        //     GameManager.Instance.GetCurrentApp().appName);
         string toDraw = "";
 
         // Draw Command Input
@@ -123,6 +131,7 @@ public class DevWindow : MonoBehaviour
 
     private void DrawCol2()
     {
+        text2.text = "";
         List<string> tabNames = new List<string> {"config", "log"};
         string currTabName = tabNames[(int)currentTab];
         tabNames[(int)currentTab] = "*" + currTabName + "*";

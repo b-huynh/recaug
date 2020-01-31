@@ -6,6 +6,9 @@ public class KeyPosition3D : MonoBehaviour
 {
     public float delta = 5.0f;
 
+    public bool wasd = false;
+    public bool arrows = true;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -14,23 +17,53 @@ public class KeyPosition3D : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            transform.position += new Vector3(0, delta, 0);
-        }
-        if (Input.GetKeyDown(KeyCode.DownArrow)) {
-            transform.position -= new Vector3(0, delta, 0);
-        }
-        if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            transform.position += new Vector3(delta, 0, 0);
-        }           
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            transform.position -= new Vector3(delta, 0, 0);
+        if (arrows)
+        {
+            if (Input.GetKey(KeyCode.UpArrow)) {
+                UpdateUp();
+            }
+            if (Input.GetKey(KeyCode.DownArrow)) {
+                UpdateDown();
+            }
+            if (Input.GetKey(KeyCode.LeftArrow)) {
+                UpdateLeft();
+            }
+            if (Input.GetKey(KeyCode.RightArrow)) {
+                UpdateRight();
+            }
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (wasd)
         {
-            Debug.LogFormat("[{0}] At position: {1}", 
-                gameObject.name, transform.position.ToString("F3"));
+            if (Input.GetKey(KeyCode.W)) {
+                UpdateUp();
+            }
+            if (Input.GetKey(KeyCode.S)) {
+                UpdateDown();
+            }
+            if (Input.GetKey(KeyCode.A)) {
+                UpdateLeft();
+            }
+            if (Input.GetKey(KeyCode.D)) {
+                UpdateRight();
+            }         
         }
+    }
+
+    void UpdateUp()
+    {
+        transform.position += new Vector3(0, delta, 0);
+    }
+    void UpdateDown()
+    {
+        transform.position -= new Vector3(0, delta, 0);
+    }
+    void UpdateLeft()
+    {
+        transform.position -= new Vector3(delta, 0, 0);
+    }
+    void UpdateRight()
+    {
+        transform.position += new Vector3(delta, 0, 0);
     }
 }

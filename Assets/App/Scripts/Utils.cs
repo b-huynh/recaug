@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public static class Utils
 {
@@ -28,6 +29,48 @@ public static class Utils
     {
 		double elapsed = (System.DateTime.UtcNow - epochStart).TotalMilliseconds;
 		return System.Convert.ToInt64(elapsed);
+	}
+
+    public static bool GetKeyDownNumeric(out int value)
+    {
+        KeyCode[] keyCodes = {
+            KeyCode.Alpha0,
+            KeyCode.Alpha1,
+            KeyCode.Alpha2,
+            KeyCode.Alpha3,
+            KeyCode.Alpha4,
+            KeyCode.Alpha5,
+            KeyCode.Alpha6,
+            KeyCode.Alpha7,
+            KeyCode.Alpha8,
+            KeyCode.Alpha9
+        };
+
+        for (int i = 0; i < keyCodes.Length; ++i)
+        {
+            if (Input.GetKeyDown(keyCodes[i]))
+            {
+                value = i;
+                return true;
+            }
+        }
+        value = -1;
+        return false;
+    }
+
+    public static Vector3 RandomPosition()
+    {
+        return new Vector3(Random.Range(-1.0f, 1.0f), Random.Range(0.0f, 2.0f), -7.0f);
+    }
+
+	public static string GetFullName (GameObject go) {
+		string name = go.name;
+		while (go.transform.parent != null) {
+
+			go = go.transform.parent.gameObject;
+			name = go.name + "/" + name;
+		}
+		return name;
 	}
 }
 

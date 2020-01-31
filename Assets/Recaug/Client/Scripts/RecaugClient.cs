@@ -1,9 +1,11 @@
-﻿using HoloToolkit.Unity;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+
+using HoloToolkit.Unity;
 
 using Recaug.Networking;
 
@@ -32,16 +34,13 @@ namespace Recaug.Client
         */
 
 
-        /*
-            All available event types...
-        */
-        public class ObjectInViewEvent : UnityEvent<ContextEventData> {}
-        public class ObjectNearbyEvent : UnityEvent<ContextEventData> {}
 
-        // Context Events
-        public ObjectInViewEvent objectInViewEvent;
-        public ObjectNearbyEvent objectNearbyEvent;
-
+        // All available event types...
+        public event Action<ObjectRegistration> OnNearIn = delegate {};
+        public event Action<ObjectRegistration> OnNearOut = delegate {};
+        // public event Action<ObjectRegistration> OnViewIn;
+        // public event Action<ObjectRegistration> OnViewOut;
+        
         // Recaug Server Connection Information
         public string RecaugServerHost;
         public string RecaugServerPort;
@@ -60,9 +59,6 @@ namespace Recaug.Client
         protected override void Awake()
         {
             base.Awake();
-            
-            objectInViewEvent = new ObjectInViewEvent();
-            objectNearbyEvent = new ObjectNearbyEvent();
 
             messageClient = new MessageClient("12001");
             messageClient.predictionEvent.AddListener(OnPredictionReceived);
@@ -71,21 +67,87 @@ namespace Recaug.Client
 
         void Update()
         {
+            UpdateEvents();
+            // TODO: Calculate In View
+            
+        }
+
+        void UpdateEvents()
+        {
+            UpdateNearIn();
+            UpdateNearOut();
+            UpdateViewIn();
+            UpdateViewOut();
+        }
+
+        /* Calculate Events */
+        private float nearbyBoundary = 1.75f;
+        private HashSet<ObjectRegistration> near = 
+            new HashSet<ObjectRegistration>();
+        void UpdateNearIn()
+        {
             // Calculate Nearby
-            float nearbyBoundary = 1.25f;
             var nearby = ObjectRegistry.Instance.Nearby(
                 Camera.main.transform.position, nearbyBoundary);
             foreach(var kv in nearby)
             {
-                ContextEventData eventData = new ContextEventData();
-                eventData.eventType = "ObjectNearby";
-                eventData.objectType = kv.Value.className;
-                eventData.position = kv.Value.position;
-                objectNearbyEvent.Invoke(eventData);
+                ObjectRegistration registration = kv.Value;
+                // If object is nearby AND it is in view
+                if (!near.Contains(registration) && InView(registration))
+                {
+                    near.Add(registration);
+                    OnNearIn(registration);
+                }
+            }
+        }
+
+
+        void UpdateNearOut()
+        {
+            HashSet<ObjectRegistration> toRemove = 
+                new HashSet<ObjectRegistration>();
+            foreach(var registration in near)
+            {
+                float distance = Vector3.Distance(registration.position,
+                    Camera.main.transform.position);
+                // If object no longer nearby OR it is not in view
+                if (distance > nearbyBoundary || !InView(registration))
+                {
+                    OnNearOut(registration);
+                    toRemove.Add(registration);
+                }
             }
 
-            // TODO: Calculate In View
-            
+            foreach(var registration in toRemove)
+            {
+                near.Remove(registration);
+            }
+        }
+
+        void UpdateViewIn()
+        {
+
+        }
+
+        void UpdateViewOut()
+        {
+
+        }
+
+        // Helper function for detecting if an object is in view.
+        private bool InView(ObjectRegistration reg)
+        {
+            Vector3 vp = Camera.main.WorldToViewportPoint(reg.position);
+            if (vp.x >= 0.0f && vp.x <= 1.0f && 
+                vp.y >= 0.0f && vp.y <= 1.0f && 
+                vp.z > 0.0f)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void Init(RecaugClientConfig config)
@@ -115,7 +177,7 @@ namespace Recaug.Client
             // Encode as base64 string
             FrameMessage m = messageFactory.GetFrameMessage(f, camMat, projMat);
             byte[] packet = MessageCodec.Pack(JsonUtility.ToJson(m));
-            messageClient.SendBytes(packet, "192.168.100.233", "12000");
+            messageClient.SendBytes(packet, GameManager.Instance.configHost, "12000");
         }
 
         // OnFrameReceived for Hololens
@@ -131,7 +193,7 @@ namespace Recaug.Client
             // Debug.LogFormat("[OnFrameReceived] Serialized Send Message: {0}", JsonUtility.ToJson(m));
 
             byte[] packet = MessageCodec.Pack(JsonUtility.ToJson(m));
-            messageClient.SendBytes(packet, "192.168.100.233", "12000");
+            messageClient.SendBytes(packet, GameManager.Instance.configHost, "12000");
         }
 
         public void OnPredictionReceived(PredictionMessage message)
