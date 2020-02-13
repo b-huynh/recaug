@@ -1115,8 +1115,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2129090239}
   - component: {fileID: 2129090240}
-  - component: {fileID: 2129090241}
   - component: {fileID: 2129090242}
+  - component: {fileID: 2129090241}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1155,6 +1155,8 @@ MonoBehaviour:
   sessionID: 
   startAppID: 0
   configHost: 
+  Clicked: 0
+  LongPressed: 0
 --- !u!114 &2129090241
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1164,10 +1166,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 2129090238}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ee85291149866f4abe481a7c0d0a431, type: 3}
+  m_Script: {fileID: 11500000, guid: e1ec17ecc18920544a691b00165d9387, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomName: TestRoom1
+  current: {fileID: 0}
 --- !u!114 &2129090242
 MonoBehaviour:
   m_ObjectHideFlags: 0
