@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +8,23 @@ using Recaug;
 public class RemindApp : App
 {
     public GameObject menuPrefab;
+
+    private Dictionary<string, (string, string)> dialogue =
+        new Dictionary<string, (string, string)>()
+    {
+        {"apple", ("Remember to buy more apples", "Rie")},
+        {"cup", ("Remember to wash the dishes", "Rie")},
+        {"bowl", ("Remember to wash the dishes", "Rie")},
+        {"bottle", ("Remember to wash the dishes", "Rie")},
+        {"donut", ("Wanna grab some donuts after work?", "Tom")},
+        {"sports ball", ("Wanna play tennis this weekend?", "Tom")},
+        {"potted plant", ("Remind me to water the plants", "Myself")},
+        {"smartphone", ("Remind me to call mom", "Myself")},
+        {"teddy bear", ("Remind me to buy gift for Rie", "Myself")},
+        {"wine glass", ("Remind me to buy wine for Rie", "Myself")},
+        {"cake", ("Remind me to buy cake for Rie", "Myself")},
+        {"scissors", ("Remind me to get a haircut", "Myself")},
+    };
 
     private List<string> knownObjects = new List<string> {
         "keyboard",
@@ -39,8 +57,13 @@ public class RemindApp : App
 
     void OnObjectRegistered(ObjectRegistration registration)
     {
-        // Do not care about words we don't know.
-        if (!knownObjects.Contains(registration.className))
+        // // Do not care about words we don't know.
+        // if (!knownObjects.Contains(registration.className))
+        // {
+        //     return;
+        // }
+
+        if (!dialogue.ContainsKey(registration.className))
         {
             return;
         }
@@ -53,7 +76,7 @@ public class RemindApp : App
         Link(menu);
 
         Vector3 menuPos;
-        menuPos = Random.Range(-1.0f, 1.0f) > 0 ? 
+        menuPos = UnityEngine.Random.Range(-1.0f, 1.0f) > 0 ? 
             registration.position + new Vector3(0.35f, 0.0f, 0.0f) : 
             registration.position + new Vector3(-0.35f, 0.0f, 0.0f);
         menu.transform.position = menuPos;
@@ -61,7 +84,9 @@ public class RemindApp : App
         menu.GetComponent<MenuElement>().AttachObject(registration);
         menu.GetComponent<MenuElement>().OpenMenu();
         menu.transform.Find("Dialogue").GetComponent<TextMesh>().text = 
-            "Reminder:\n Buy " + registration.className;
+            "MEMO\n" + Utils.WrapText(dialogue[registration.className].Item1, 15);
+        menu.transform.Find("Byline").GetComponent<TextMesh>().text =
+            "- " + dialogue[registration.className].Item2;
     
         foreach(var button in menu.GetComponentsInChildren<UIFocusable>())
         {

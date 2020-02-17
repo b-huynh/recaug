@@ -21,6 +21,7 @@ public class QuizFocusable : MonoBehaviour, IFocusable
     void Awake()
     {
         defaultColor = GetComponent<Renderer>().material.color;
+        GetComponent<Renderer>().material.renderQueue = 3001;
     }
 
     void Start()

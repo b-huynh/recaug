@@ -29,6 +29,11 @@ public class ContextMenu : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Get Object Name
+        var reg = GetComponentInParent<ObjectRegistration>();
+        var textMesh = transform.Find("Prompt").GetComponent<TextMesh>();
+        textMesh.text = string.Format("( {0} )\nOpen With", reg.className);
+
         // var focusable = GetComponentInChildren<UIFocusable>();
         // focusable.OnSelect += delegate {
         //     Open();

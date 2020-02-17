@@ -9,26 +9,43 @@ public class WorkApp : App
 {
     public GameObject menuPrefab;
 
-    private Dictionary<string, string> dialogue = new Dictionary<string, string>()
+    // private Dictionary<string, string> dialogue = new Dictionary<string, string>()
+    // {
+    //     {"mouse", "Does this {0}\nneed replacing"},
+    //     {"remote", "Does this {0}\nneed replacing"},
+    //     {"keyboard", "Does this {0}\nneed replacing"},
+    //     {"cell phone", "Does this {0}\nneed replacing"},
+    //     {"clock", "Does this {0}\nneed replacing"},
+    //     {"vase", "Does this {0}\nneed replacing"},
+    //     {"potted plant", "Does this {0}\nneed replacing"},
+    //     {"cup", "Does this {0}\nneed replacing"},
+    //     {"bowl", "Does this {0}\nneed replacing"},
+    // };
+
+    private Dictionary<string, (string, string)> dialogue =
+        new Dictionary<string, (string, string)>()
     {
-        {"mouse", "Does this {0}\nneed replacing"},
-        {"remote", "Does this {0}\nneed replacing"},
-        {"keyboard", "Does this {0}\nneed replacing"},
-        {"cell phone", "Does this {0}\nneed replacing"},
-        {"clock", "Does this {0}\nneed replacing"},
-        {"vase", "Does this {0}\nneed replacing"},
-        {"potted plant", "Does this {0}\nneed replacing"},
-        {"cup", "Does this {0}\nneed replacing"},
-        {"bowl", "Does this {0}\nneed replacing"},
+        {"tv", ("I want a bigger monitor", "Matt")},
+        {"mouse", ("This {0}  is broken", "Jeff")},
+        {"remote", ("{0} needs new batteries", "Jeff")},
+        {"keyboard", ("This {0} is broken", "Jeff")},
+        {"cell phone", ("This {0} needs repair", "Jeff")},
+        {"clock", ("This {0} is wrong", "Jeff")},
+        {"vase", ("This {0} is cracked", "Christine")},
+        {"potted plant", ("The {0} needs water", "Christine")},
+        {"cup", ("Not enough {0}s", "Christine")},
+        {"bowl", ("Not enough {0}s", "Christine")},
+        {"apple", ("I want better snacks", "Matt")},
+        {"chair", ("I want a new {0}", "Matt")},
     };
 
-    private List<string> knownObjects = new List<string> {
-        "keyboard",
-        "bowl",
-        "bottle",
-        "cup",
-        "teddy bear"
-    };
+    // private List<string> knownObjects = new List<string> {
+    //     "keyboard",
+    //     "bowl",
+    //     "bottle",
+    //     "cup",
+    //     "teddy bear"
+    // };
 
     // Start is called before the first frame update
     protected override void Awake()
@@ -39,10 +56,10 @@ public class WorkApp : App
 
     void Start()
     {
-        if (Config.Loaded)
-        {
-            knownObjects = new List<string>(Config.Experiment.AppObjects1);
-        }
+        // if (Config.Loaded)
+        // {
+        //     knownObjects = new List<string>(Config.Experiment.AppObjects1);
+        // }
     }
 
     // Update is called once per frame
@@ -53,7 +70,8 @@ public class WorkApp : App
     void OnObjectRegistered(ObjectRegistration registration)
     {
         // Do not care about words we don't know.
-        if (!knownObjects.Contains(registration.className))
+        // if (!knownObjects.Contains(registration.className))
+        if (!dialogue.ContainsKey(registration.className))
         {
             return;
         }
@@ -108,17 +126,22 @@ public class WorkApp : App
 
     public string GetDialogue(string type)
     {
+        string retval;
         if (dialogue.ContainsKey(type))
         {
             try
             {
-                return string.Format(dialogue[type], type);
+                retval = string.Format(dialogue[type].Item1, type);
             }
             catch
             {
-                return dialogue[type];
+                retval = dialogue[type].Item1;
             }
         }
-        return string.Format("Pack {0}", type);
+        else
+        {
+            retval = string.Format("Pack {0}", type);
+        }
+        return Utils.WrapText(retval, 15);
     }
 }

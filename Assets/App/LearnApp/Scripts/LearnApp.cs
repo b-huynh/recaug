@@ -129,7 +129,7 @@ public class LearnApp : App
         // Create the Quiz
         var quiz = objectTag.GetComponent<MultipleChoiceQuiz>();
         int correctResponse = Random.Range(0, 4);
-        var junk = new List<string> { "surfboard", "motorcycle", "airplane", "zebra" };
+        var junk = new List<string> { "giraffe", "motorcycle", "airplane", "zebra" };
         for(int i = 0; i < 4; ++i)
         {
             if (i == correctResponse)

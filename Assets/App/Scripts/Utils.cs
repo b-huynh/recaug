@@ -72,6 +72,35 @@ public static class Utils
 		}
 		return name;
 	}
+
+    public static string WrapText(string text, int maxLineLength)
+    {
+        string[] words = text.Split(' ');
+        string retval = "";
+        int lineLength = 0;
+
+        foreach(string word in words)
+        {
+            if (word.Length > maxLineLength)
+            {
+                throw new System.ArgumentException(
+                    "Text contains words larger than maxLineLength");
+            }
+            
+            lineLength += word.Length;
+            if (lineLength <= maxLineLength)
+            {
+                retval += word + " ";
+                lineLength += 1;
+            }
+            else
+            {
+                retval += "\n" + word + " ";
+                lineLength = word.Length + 1;
+            }
+        }
+        return retval;
+    }
 }
 
 [System.Serializable]
