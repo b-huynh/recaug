@@ -9,19 +9,6 @@ public class WorkApp : App
 {
     public GameObject menuPrefab;
 
-    // private Dictionary<string, string> dialogue = new Dictionary<string, string>()
-    // {
-    //     {"mouse", "Does this {0}\nneed replacing"},
-    //     {"remote", "Does this {0}\nneed replacing"},
-    //     {"keyboard", "Does this {0}\nneed replacing"},
-    //     {"cell phone", "Does this {0}\nneed replacing"},
-    //     {"clock", "Does this {0}\nneed replacing"},
-    //     {"vase", "Does this {0}\nneed replacing"},
-    //     {"potted plant", "Does this {0}\nneed replacing"},
-    //     {"cup", "Does this {0}\nneed replacing"},
-    //     {"bowl", "Does this {0}\nneed replacing"},
-    // };
-
     private Dictionary<string, (string, string)> dialogue =
         new Dictionary<string, (string, string)>()
     {
@@ -39,14 +26,6 @@ public class WorkApp : App
         {"chair", ("I want a new {0}", "Matt")},
     };
 
-    // private List<string> knownObjects = new List<string> {
-    //     "keyboard",
-    //     "bowl",
-    //     "bottle",
-    //     "cup",
-    //     "teddy bear"
-    // };
-
     // Start is called before the first frame update
     protected override void Awake()
     {
@@ -56,10 +35,6 @@ public class WorkApp : App
 
     void Start()
     {
-        // if (Config.Loaded)
-        // {
-        //     knownObjects = new List<string>(Config.Experiment.AppObjects1);
-        // }
     }
 
     // Update is called once per frame
@@ -83,11 +58,7 @@ public class WorkApp : App
         var menu = GameObject.Instantiate(menuPrefab);
         Link(menu);
 
-        Vector3 menuPos;
-        menuPos = Random.Range(-1.0f, 1.0f) > 0 ? 
-            registration.position + new Vector3(0.35f, 0.0f, 0.0f) : 
-            registration.position + new Vector3(-0.35f, 0.0f, 0.0f);
-        menu.transform.position = RandomMenuPosition(registration.position);
+        menu.transform.position = Utils.RandomMenuPosition(registration.position);
 
         menu.GetComponent<MenuElement>().AttachObject(registration);
         menu.GetComponent<MenuElement>().OpenMenu();
@@ -98,21 +69,6 @@ public class WorkApp : App
         {
             button.OnSelect += OnFocusSelect;
         }
-    }
-
-    private Vector3 RandomMenuPosition(Vector3 objectPosition)
-    {
-        float delta = 0.25f;
-        List<Vector3> deltas = new List<Vector3>() {
-            new Vector3(delta, 0.0f, 0.0f),
-            new Vector3(delta, delta, 0.0f),
-            new Vector3(0.0f, delta, 0.0f),
-            new Vector3(-delta, delta, 0.0f),
-            new Vector3(-delta, 0.0f, 0.0f)
-        };
-        var menuPositions = deltas.Select(x => objectPosition + x).ToList();
-        int rand = Random.Range(0, 5);
-        return menuPositions[rand]; 
     }
 
     public void OnFocusSelect(GameObject caller)

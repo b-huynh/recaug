@@ -75,11 +75,7 @@ public class RemindApp : App
         var menu = GameObject.Instantiate(menuPrefab);
         Link(menu);
 
-        Vector3 menuPos;
-        menuPos = UnityEngine.Random.Range(-1.0f, 1.0f) > 0 ? 
-            registration.position + new Vector3(0.35f, 0.0f, 0.0f) : 
-            registration.position + new Vector3(-0.35f, 0.0f, 0.0f);
-        menu.transform.position = menuPos;
+        menu.transform.position = Utils.RandomMenuPosition(registration.position);
 
         menu.GetComponent<MenuElement>().AttachObject(registration);
         menu.GetComponent<MenuElement>().OpenMenu();

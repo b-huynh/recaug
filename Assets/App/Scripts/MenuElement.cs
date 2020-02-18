@@ -53,7 +53,7 @@ public class MenuElement : MonoBehaviour
             float width = collider.bounds.extents.x;
             float height = collider.bounds.extents.y;
 
-            Vector3 lineStart = transform.position;
+            Vector3 lineStart = collider.gameObject.transform.position;
             Vector3 rightExtent = lineStart - new Vector3(width, 0, 0);
             Vector3 leftExtent = lineStart + new Vector3(width, 0, 0);
             

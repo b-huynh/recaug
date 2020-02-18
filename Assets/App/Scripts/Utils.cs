@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -61,6 +62,21 @@ public static class Utils
     public static Vector3 RandomPosition()
     {
         return new Vector3(Random.Range(-1.0f, 1.0f), Random.Range(0.0f, 2.0f), -7.0f);
+    }
+
+    public static Vector3 RandomMenuPosition(Vector3 objectPosition)
+    {
+        float delta = 0.25f;
+        List<Vector3> deltas = new List<Vector3>() {
+            new Vector3(delta, 0.0f, 0.0f),
+            new Vector3(delta, delta, 0.0f),
+            new Vector3(0.0f, delta, 0.0f),
+            new Vector3(-delta, delta, 0.0f),
+            new Vector3(-delta, 0.0f, 0.0f)
+        };
+        var menuPositions = deltas.Select(x => objectPosition + x).ToList();
+        int rand = Random.Range(0, 5);
+        return menuPositions[rand]; 
     }
 
 	public static string GetFullName (GameObject go) {
