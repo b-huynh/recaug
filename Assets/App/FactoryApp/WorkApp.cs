@@ -64,10 +64,15 @@ public class WorkApp : App
         menu.GetComponent<MenuElement>().OpenMenu();
         menu.transform.Find("Dialogue").GetComponent<TextMesh>().text = 
             GetDialogue(registration.className);
+        menu.transform.Find("Byline").GetComponent<TextMesh>().text =
+            "- " + dialogue[registration.className].Item2;
     
         foreach(var button in menu.GetComponentsInChildren<UIFocusable>())
         {
-            button.OnSelect += OnFocusSelect;
+            button.OnSelect += delegate(GameObject caller) {
+                OnFocusSelect(caller);
+                registration.gameObject.GetComponentInChildren<ContextMenu>().RemoveApp(appID);
+            };
         }
     }
 

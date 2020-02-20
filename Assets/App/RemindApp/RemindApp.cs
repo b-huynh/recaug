@@ -86,7 +86,10 @@ public class RemindApp : App
     
         foreach(var button in menu.GetComponentsInChildren<UIFocusable>())
         {
-            button.OnSelect += OnFocusSelect;
+            button.OnSelect += delegate(GameObject caller) {
+                OnFocusSelect(caller);
+                registration.gameObject.GetComponentInChildren<ContextMenu>().RemoveApp(appID);
+            };
         }
     }
 

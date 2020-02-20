@@ -7,7 +7,6 @@ using HoloToolkit.Unity;
 
 public class StatsTracker : Singleton<StatsTracker>
 {
-
     public static int TotalActivities = 21;
 
     // Time task was started
@@ -18,28 +17,28 @@ public class StatsTracker : Singleton<StatsTracker>
 
     // Key: timestamp
     // Value: (object class, position)
-    Dictionary<int, (string, Vector3)> objectDiscoveryLog =
-        new Dictionary<int, (string, Vector3)>();
+    Dictionary<float, (string, Vector3)> objectDiscoveryLog =
+        new Dictionary<float, (string, Vector3)>();
 
     // Key: timestamp
     // Value: (object class, app name, response)
-    Dictionary<int, (string, string, string)> activityLog =
-        new Dictionary<int, (string, string, string)>();
+    Dictionary<float, (string, string, string)> activityLog =
+        new Dictionary<float, (string, string, string)>();
 
     // Key: timestamp
     // Value: (object class, quiz response)
-    Dictionary<int, (string, string)> quizLog =
-        new Dictionary<int, (string, string)>();
+    Dictionary<float, (string, string)> quizLog =
+        new Dictionary<float, (string, string)>();
 
     // Key: timestamp
     // Value: (app name, start/stop type)
-    Dictionary<int, (string, string)> appTimeLog =
-        new Dictionary<int, (string, string)>();
+    Dictionary<float, (string, string)> appTimeLog =
+        new Dictionary<float, (string, string)>();
 
     // Key: timestamp
     // Value: (origin app, switch app, switch type)
-    Dictionary<int, (string, string, string)> switchLog = 
-        new Dictionary<int, (string, string, string)>();
+    Dictionary<float, (string, string, string)> switchLog = 
+        new Dictionary<float, (string, string, string)>();
 
     // Start is called before the first frame update
     void Start()
@@ -51,5 +50,40 @@ public class StatsTracker : Singleton<StatsTracker>
     void Update()
     {
         
+    }
+
+    public void LogStart()
+    {
+        timeStarted = Time.time;
+    }
+
+    public void LogComplete()
+    {
+        timeCompleted = Time.time;
+    }
+
+    public void LogObjectDiscovered(string className, Vector3 position)
+    {
+        objectDiscoveryLog[Time.time] = (className, position);
+    }
+
+    public void LogActivity(string className, string appName, string response)
+    {
+        activityLog[Time.time] = (className, appName, response);
+    }
+
+    public void LogQuiz(string className, string response)
+    {
+        quizLog[Time.time] = (className, response);
+    }
+
+    public void LogAppUsage(string appName, string eventType)
+    {
+        appTimeLog[Time.time] = (appName, eventType);
+    }
+
+    public void LogAppSwitch(string sourceApp, string destApp, string eventType)
+    {
+        switchLog[Time.time] = (sourceApp, destApp, eventType);
     }
 }
