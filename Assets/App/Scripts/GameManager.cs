@@ -87,7 +87,7 @@ public class GameManager : Singleton<GameManager>
         RecaugClient.Instance.OnNearOut += OnNearOut;
 
         sessionID = System.Guid.NewGuid().ToString();
-        StatsTracker.Instance.LogStart();
+        StatsTracker.Instance.LogStart(sessionID);
 
         // currAppID = startAppID;
         RequestAppFocus(0);

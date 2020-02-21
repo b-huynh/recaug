@@ -29,6 +29,16 @@ namespace Recaug
 
 		public Dictionary<string, ObjectRegistration> registry;
 
+		// Allows manual override of certain classifications to other names.
+		private Dictionary<string, string> NameOverlaps = 
+			new Dictionary<string, string>()
+		{
+			{"remote", "keyboard"},
+			{"vase", "potted plant"},
+			{"laptop", "tv"},
+			{"cell phone", "smartphone"},
+		};
+
 		protected override void Awake()
 		{
 			base.Awake();
@@ -49,6 +59,11 @@ namespace Recaug
 
 		public ObjectRegistration Register(string name, Vector3 position)
 		{
+			if (NameOverlaps.ContainsKey(name))
+			{
+				name = NameOverlaps[name];
+			}
+
 			if (policy == Policy.FIRST_IN && Contains(name))
 			{
 				// Object already registered, return same object

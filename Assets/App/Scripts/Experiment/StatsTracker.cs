@@ -8,17 +8,10 @@ using HoloToolkit.Unity;
 
 public class StatsTracker : Singleton<StatsTracker>
 {
-    // Log output location
-    private static string FileName = GameManager.Instance.sessionID + ".log";
-
-#if WINDOWS_UWP
-    private static string FilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, FileName);
-#else
-    private static string FilePath = Path.Combine(Application.persistentDataPath, FileName);
-#endif
+    private string SessionID = "";
 
     // public static int TotalActivities = 36; // The real amount for final experiment;
-    public static int TotalActivities = 21;
+    public static int TotalActivities = 5;
     public static int CompletedActivities { get; private set; } = 0;
 
     public static int TotalObjects = 21;
@@ -71,20 +64,25 @@ public class StatsTracker : Singleton<StatsTracker>
     {
         if (Input.GetKeyDown(KeyCode.L))
         {
-            WriteLog();
+            LogComplete();
         }
     }
 
-    public void LogStart()
+    public void LogStart(string sessionID)
     {
         timeStarted = Time.time;
-        lines.Add(String.Format("{0}, {1}", "start", timeStarted.ToString()));
+        SessionID = sessionID;
+        lines.Add(String.Format("{0}, {1}, {2}", 
+            "start", timeStarted.ToString(), SessionID));
     }
 
     public void LogComplete()
     {
         timeCompleted = Time.time;
-        lines.Add(String.Format("{0}, {1}", "complete", timeCompleted.ToString()));
+        lines.Add(String.Format("{0}, {1}, {2}",
+            "complete", timeCompleted.ToString(), SessionID));
+        WriteLog();
+        SessionID = "";
     }
 
     public void LogObjectDiscovered(string className, Vector3 position)
@@ -150,6 +148,18 @@ public class StatsTracker : Singleton<StatsTracker>
 
     public void WriteLog()
     {
-        File.WriteAllLines(FilePath, lines);
+    // Log output location
+        string fileName = SessionID + ".log";
+
+    #if WINDOWS_UWP
+        string filePath =
+            Path.Combine(ApplicationData.Current.LocalFolder.Path, fileName);
+    #else
+        string filePath =
+            Path.Combine(Application.persistentDataPath, fileName);
+    #endif
+
+        Debug.Log("Writing to file: " + filePath);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+        File.WriteAllLines(filePath, lines);
     }
 }

@@ -94,6 +94,7 @@ public static class Translator {
 				{"oven", "horno"},
 				{"toaster", "tostadora"},
 				{"book", "libro"},
+				{"smartphone", "teléfono móvil"},
 			}
 		}, 
 		{
@@ -179,6 +180,7 @@ public static class Translator {
 				{"oven", "オーブン"},
 				{"toaster", "トースター"},
 				{"book", "本"},
+				{"smartphone", "スマートフォン"},
 			}
 		}
 	};
