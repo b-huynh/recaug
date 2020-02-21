@@ -70,20 +70,31 @@ public class WorkApp : App
         foreach(var button in menu.GetComponentsInChildren<UIFocusable>())
         {
             button.OnSelect += delegate(GameObject caller) {
-                OnFocusSelect(caller);
+                var menuElement = 
+                    caller.transform.parent.transform.parent.GetComponent<MenuElement>();
+                string item = menuElement.attachedObject.className;
+                string response = caller.GetComponent<TextMesh>().text;
+
+                // Log response
+                Debug.LogFormat("Item {0} Selected {1}", item, response);
+                StatsTracker.Instance.LogActivity(
+                    registration.className, appName, response);
+
+                // Cleanup menu UI elements;
+                menuElement.CloseMenu();
                 registration.gameObject.GetComponentInChildren<ContextMenu>().RemoveApp(appID);
             };
         }
     }
 
-    public void OnFocusSelect(GameObject caller)
-    {
-        var menu = caller.transform.parent.transform.parent.GetComponent<MenuElement>();
-        string item = menu.attachedObject.className;
-        Debug.LogFormat("Item {0} Selected {1}", 
-            item, caller.GetComponent<TextMesh>().text);
-        menu.CloseMenu();
-    }
+    // public void OnFocusSelect(GameObject caller)
+    // {
+    //     var menu = caller.transform.parent.transform.parent.GetComponent<MenuElement>();
+    //     string item = menu.attachedObject.className;
+    //     Debug.LogFormat("Item {0} Selected {1}", 
+    //         item, caller.GetComponent<TextMesh>().text);
+    //     menu.CloseMenu();
+    // }
 
     public string GetDialogue(string type)
     {

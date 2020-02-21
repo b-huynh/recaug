@@ -62,6 +62,8 @@ namespace Recaug
 			registry.Add(name, registration);
 
 			Debug.LogFormat("Object: {0} registered", registration.className);
+			StatsTracker.Instance.LogObjectDiscovered(
+				registration.className, registration.position);
 			OnRegistered(registration);
 			
 			return registration;

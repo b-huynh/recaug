@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+using Recaug;
+
 public class MultipleChoiceQuiz : MonoBehaviour
 {
     public string question
@@ -20,9 +22,15 @@ public class MultipleChoiceQuiz : MonoBehaviour
         }
     }
 
+    // Very very bad. Only used for stats tracking. Should remove soon if possible;
+    public ObjectRegistration registration = null;
+    public App parentApp = null;
+
     public int answer;
     public List<GameObject> responses = new List<GameObject>();
+    public Dictionary<int, string> gtResponses = new Dictionary<int, string>();
     public event Action OnCorrectResponse = delegate {};
+    public event Action<string> OnResponse = delegate {};
 
     // Start is called before the first frame update
     void Start()
@@ -43,10 +51,19 @@ public class MultipleChoiceQuiz : MonoBehaviour
     {
     }
 
-    public void SetOption(int option, string value)
+    public void SetOption(int option, string value,
+        Translator.TargetLanguage targetLanguage = Translator.TargetLanguage.English)
     {
         GameObject response = responses[option];
-        response.GetComponentInChildren<TextMesh>().text = value;
+
+        gtResponses[option] = value;
+
+        string displayValue = value;
+        if (targetLanguage != Translator.TargetLanguage.English)
+        {
+            displayValue = Translator.Translate(value, targetLanguage);
+        }
+        response.GetComponentInChildren<TextMesh>().text = displayValue;
     }
 
     public void SetAnswer(int option)
@@ -54,10 +71,22 @@ public class MultipleChoiceQuiz : MonoBehaviour
         answer = option;
     }
 
+    public void SetObject(ObjectRegistration registration)
+    {
+        this.registration = registration;
+    }
+
     private void OnSelect(int idx)
     {
+        // Log quiz response
+        StatsTracker.Instance.LogQuiz(registration.className, gtResponses[idx]);
+
         if (idx == answer)
         {
+            // Log correct quiz response as activity completion;
+            StatsTracker.Instance.LogActivity(registration.className,
+                parentApp.appName, gtResponses[idx]);
+
             // Do Correct Animation
             var animation = responses[idx].transform.Find(
                 "Correct").GetComponent<FadeInAnimation>();

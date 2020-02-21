@@ -46,6 +46,8 @@ public class GameManager : Singleton<GameManager>
 
     // Location of config file
     private List<string> configHostList = new List<string>() {
+        "0.0.0.0",
+        "192.168.10.19",
         // "192.168.10.3",
         // "192.168.10.25",
         "192.168.100.233",
@@ -85,7 +87,8 @@ public class GameManager : Singleton<GameManager>
         RecaugClient.Instance.OnNearOut += OnNearOut;
 
         sessionID = System.Guid.NewGuid().ToString();
-        
+        StatsTracker.Instance.LogStart();
+
         // currAppID = startAppID;
         RequestAppFocus(0);
     }
@@ -253,10 +256,14 @@ public class GameManager : Singleton<GameManager>
             return;
         }
 
+        string source = "null";
+        string destination = "null";
+
         // Stop current app
         if (appStack.Count > 0)
         {
-            appStack.Peek().app.Suspend();    
+            source = appStack.Peek().app.appName;
+            appStack.Peek().app.Suspend();  
         }
 
         // Switch to new app by placing on stack
@@ -265,6 +272,8 @@ public class GameManager : Singleton<GameManager>
         stackFrame.callerObject = callerObject;
         appStack.Push(stackFrame);
         appStack.Peek().app.Resume();
+
+        destination = appStack.Peek().app.appName;
 
         // if (animate)
         // {
@@ -282,10 +291,11 @@ public class GameManager : Singleton<GameManager>
 
         DebugStackFrame();
 
+        string switchType = callerObject == null ? "manual" : "contextMenu";
+        StatsTracker.Instance.LogAppSwitch(source, destination, switchType);
+
         appStack.Peek().app.BroadcastMessage("OnAppSwitch", stackFrame,
             SendMessageOptions.DontRequireReceiver);
-
-
     }
 
     public void ReleaseAppFocus(bool animate = false)

@@ -128,19 +128,24 @@ public class LearnApp : App
 
         // Create the Quiz
         var quiz = objectTag.GetComponent<MultipleChoiceQuiz>();
+        
+        // Instantiate some variables that shouldn't be there...
+        quiz.registration = registration;
+        quiz.parentApp = this;
+
+        // Set quiz options and correct answer
         int correctResponse = Random.Range(0, 4);
         var junk = new List<string> { "giraffe", "motorcycle", "airplane", "zebra" };
         for(int i = 0; i < 4; ++i)
         {
             if (i == correctResponse)
             {
-                quiz.SetOption(i, Translator.Translate(
-                    registration.className, Config.Experiment.TargetLanguage));
+                quiz.SetOption(i, registration.className,
+                    Config.Experiment.TargetLanguage);
             }
             else
             {
-                quiz.SetOption(i, Translator.Translate(
-                    junk[i], Config.Experiment.TargetLanguage));
+                quiz.SetOption(i, junk[i], Config.Experiment.TargetLanguage);
             }
         }
         quiz.SetAnswer(correctResponse);

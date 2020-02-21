@@ -87,7 +87,16 @@ public class RemindApp : App
         foreach(var button in menu.GetComponentsInChildren<UIFocusable>())
         {
             button.OnSelect += delegate(GameObject caller) {
-                OnFocusSelect(caller);
+                var menuElement =
+                    caller.transform.parent.transform.parent.GetComponent<MenuElement>();
+                string item = menuElement.attachedObject.className;
+                string response = caller.GetComponent<TextMesh>().text;
+
+                Debug.LogFormat("Item {0} Selected {1}", item, response);
+                StatsTracker.Instance.LogActivity(
+                    registration.className, appName, response);
+
+                menuElement.CloseMenu();
                 registration.gameObject.GetComponentInChildren<ContextMenu>().RemoveApp(appID);
             };
         }
@@ -97,8 +106,9 @@ public class RemindApp : App
     {
         var menu = caller.transform.parent.transform.parent.GetComponent<MenuElement>();
         string item = menu.attachedObject.className;
+        string response = caller.GetComponent<TextMesh>().text;
         Debug.LogFormat("Item {0} Selected {1}", 
-            item, caller.GetComponent<TextMesh>().text);
+            item, response);
         menu.CloseMenu();
     }
 

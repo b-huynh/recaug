@@ -47,12 +47,16 @@ public class App : MonoBehaviour
     {
         SetActiveState(true);
         running = true;
+
+        StatsTracker.Instance.LogAppStart(appName);
     }
 
     public void Suspend()
     {
         SetActiveState(false);
         running = false;
+        
+        StatsTracker.Instance.LogAppStop(appName);
     }
 
     public void SetActiveState(bool active)
