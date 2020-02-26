@@ -50,7 +50,6 @@ public class StatsTracker : Singleton<StatsTracker>
     SortedDictionary<float, (string, string, string)> switchLog = 
         new SortedDictionary<float, (string, string, string)>();
 
-
     private List<string> lines = new List<string>();
 
     // Start is called before the first frame update
@@ -148,16 +147,16 @@ public class StatsTracker : Singleton<StatsTracker>
 
     public void WriteLog()
     {
-    // Log output location
+        // Log output location
         string fileName = SessionID + ".log";
 
-    #if WINDOWS_UWP
+#if WINDOWS_UWP
         string filePath =
             Path.Combine(ApplicationData.Current.LocalFolder.Path, fileName);
-    #else
+#else
         string filePath =
             Path.Combine(Application.persistentDataPath, fileName);
-    #endif
+#endif
 
         Debug.Log("Writing to file: " + filePath);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
         File.WriteAllLines(filePath, lines);

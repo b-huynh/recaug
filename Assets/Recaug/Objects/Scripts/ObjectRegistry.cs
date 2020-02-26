@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -55,7 +56,14 @@ namespace Recaug
 		{
 		}
 
-		public void Update() {}
+		public void Update() 
+		{
+			if (Input.GetKeyDown(KeyCode.T))
+			{
+				string filePath = "C:\\Users\\yukib\\AppData\\LocalLow\\DefaultCompany\\Recaug-v0_1\\258707b6-a269-4471-a9a9-c0a4173a17eb.log";
+				LoadFromLog(filePath);
+			}
+		}
 
 		public ObjectRegistration Register(string name, Vector3 position)
 		{
@@ -126,6 +134,34 @@ namespace Recaug
 				kv.Value.gameObject.SetActive(false);
 			}
 			registry.Clear();
+		}
+		
+		public void LoadFromLog(string filePath)
+		{
+			string[] logLines = File.ReadAllLines(filePath);
+			foreach(string line in logLines)
+			{
+				if (line.StartsWith("object"))
+				{
+					string[] columns = line.Split(',');
+					string positionStr = columns[3].TrimStart(' ');
+					Debug.Log(positionStr);
+					string[] positionValues = positionStr.Split(',');
+					
+					string xStr = positionValues[0].TrimStart('(');
+					float x = float.Parse(xStr);
+
+					string yStr = positionValues[1].TrimStart(' ');
+					float y = float.Parse(yStr);
+
+					string zStr = positionValues[2].TrimStart(' ').TrimEnd(')');
+					float z = float.Parse(zStr);
+
+					string parsedName = columns[2].TrimStart(' ');
+					Vector3 parsedPosition = new Vector3(x, y, z);
+					Register(parsedName, parsedPosition);
+				}
+			}
 		}
 	}
 
