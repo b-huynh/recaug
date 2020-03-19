@@ -72,30 +72,33 @@ public class AppTabs : Singleton<AppTabs>
             requestDrawerClose = false;
         }
 
-        if (GameManager.Instance.LongPressed)
+        // if (GameManager.Instance.LongPressed)
+        if (Input.GetButtonDown("Menu"))
         {
             if (!appDrawerOpen)
             {
                 RequestDrawerOpen();
+                StatsTracker.Instance.LogMenuOpen();
             }
             else
             {
                 RequestDrawerClose();
+                StatsTracker.Instance.LogMenuClose();
             }
         }
     }
 
-    public void OnLongPress()
-    {
-        if (!appDrawerOpen)
-        {
-            RequestDrawerOpen();
-        }
-        else
-        {
-            RequestDrawerClose();
-        }
-    }
+    // public void OnLongPress()
+    // {
+    //     if (!appDrawerOpen)
+    //     {
+    //         RequestDrawerOpen();
+    //     }
+    //     else
+    //     {
+    //         RequestDrawerClose();
+    //     }
+    // }
 
     public void RequestAppSwitch(int appID, bool animate = false, Action callback = null)
     {

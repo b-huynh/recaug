@@ -12,7 +12,7 @@ public class DevWindow : MonoBehaviour
 
     // State
     enum InspectorTab { CONFIG = 0, LOG = 1 }
-    private InspectorTab currentTab = InspectorTab.CONFIG;
+    private InspectorTab currentTab = InspectorTab.LOG;
     private bool inDebugHUD = false;
     private bool isEnteringCommand = false;
     private string currentCommand = "";
@@ -48,7 +48,7 @@ public class DevWindow : MonoBehaviour
             icon.AppID = GameManager.Instance.currAppID;
         }
 
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetButtonDown("DevWindow"))
             Toggle("Debug Overlay", ref inDebugHUD);
 
         canvas.enabled = inDebugHUD;
@@ -105,7 +105,6 @@ public class DevWindow : MonoBehaviour
     private bool Toggle(string name, ref bool val)
     {
         val = !val;
-        Debug.LogFormat("[GameManager] {0}: {1}", name, val);
         return val;
     }
 
@@ -117,6 +116,12 @@ public class DevWindow : MonoBehaviour
 
         // Draw Command Input
         toDraw += "[COMMAND]: " + currentCommand + "\n";
+        toDraw += string.Format("[# discovered]: {0} / {1}\n",
+            StatsTracker.Instance.DiscoveredObjects.ToString(),
+            StatsTracker.TotalObjects);
+        toDraw += string.Format("[# completed]: {0} / {1}\n",
+            StatsTracker.Instance.CompletedActivities.ToString(),
+            StatsTracker.TotalActivities);
         toDraw += string.Format("[mesh]: {0}\n",
             SpatialMappingManager.Instance.DrawVisualMeshes.ToString());
 
@@ -125,6 +130,8 @@ public class DevWindow : MonoBehaviour
            
         toDraw += string.Format("[crsr]: {0}]\n", 
             cursor.transform.position.ToString());
+        toDraw += string.Format("[app stack]: {0}\n",
+            GameManager.Instance.stackHistory);
 
         text1.text = toDraw;
     }
@@ -135,20 +142,29 @@ public class DevWindow : MonoBehaviour
         List<string> tabNames = new List<string> {"config", "log"};
         string currTabName = tabNames[(int)currentTab];
         tabNames[(int)currentTab] = "*" + currTabName + "*";
-        string tabIndicator = "|" + string.Join("|", tabNames) + "|\n>>\n";
+        string tabIndicator = "| " + string.Join(" | ", tabNames) + " |\n";
 
         string toDraw = tabIndicator;
         // Draw inspector tabs
         switch(currentTab)
         {
             case InspectorTab.CONFIG:
-                toDraw += JsonUtility.ToJson(Config.Params, true);
+                toDraw += GetDevConfigContent();
                 break;
             case InspectorTab.LOG:
-                toDraw += "LOG NOT YET IMPLEMENTED";
+                toDraw += GetDevLogContent();
                 break;
         }
         text2.text = toDraw;
     }
 
+    private string GetDevConfigContent()
+    {
+        return JsonUtility.ToJson(Config.Params, true);
+    }
+
+    private string GetDevLogContent()
+    {
+        return "-" + string.Join("-", RemoteDebug.Instance.history);
+    }
 }

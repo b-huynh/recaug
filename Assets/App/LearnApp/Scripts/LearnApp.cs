@@ -97,19 +97,24 @@ public class LearnApp : App
 
     void OnAppSwitch(AppStackFrame callFrame)
     {
-        Debug.LogFormat("OnAppSwitch called with {0}", callFrame.callerObject);
-        if (callFrame.callerObject == null)
-        {
-            // Manual app switch, display all.
-            releaseFocusAfterQuiz = false;
-        }
-        else
-        {
-            // Object specific app switch, display object content only.
-            SetActiveState(false);
-            toLearn[callFrame.callerObject.className].SetActive(true);
-            releaseFocusAfterQuiz = true;
-        }
+        // For now, display all content
+        releaseFocusAfterQuiz = false;
+
+        // BELOW: Prototype code for object-only display method
+
+        // // Debug.LogFormat("OnAppSwitch called with {0}", callFrame.callerObject);
+        // if (callFrame.callerObject == null)
+        // {
+        //     // Manual app switch, display all.
+        //     releaseFocusAfterQuiz = false;
+        // }
+        // else
+        // {
+        //     // Object specific app switch, display object content only.
+        //     SetActiveState(false);
+        //     toLearn[callFrame.callerObject.className].SetActive(true);
+        //     releaseFocusAfterQuiz = true;
+        // }
     }
 
     void CreateQuizContent(ObjectRegistration registration)
@@ -152,7 +157,6 @@ public class LearnApp : App
 
         // Set response callback
         quiz.OnCorrectResponse += delegate {
-            Debug.Log("Triggering correct response callback");
             // Remove Learning Event
             toLearn.Remove(registration.className);
 

@@ -19,26 +19,25 @@ public class HomeApp : App
 
     public void Start()
     {
-        SetRenderState(showLabels);
+        // SetRenderState(showLabels);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            showLabels = !showLabels;
-        }
-        SetRenderState(showLabels);  
+        // if (Input.GetKeyDown(KeyCode.E))
+        // {
+        //     showLabels = !showLabels;
+        // }
+        // SetRenderState(showLabels);  
     }
 
     void OnObjectRegistered(ObjectRegistration registration)
     {
-        var label = GameObject.Instantiate(labelPrefab);
-        Link(label);
-        label.GetComponentInChildren<TextMesh>().text = registration.className;
-        label.transform.parent = registration.gameObject.transform;
-        label.transform.localPosition = new Vector3();
-        // label.transform.position = registration.position;
+        // var label = GameObject.Instantiate(labelPrefab);
+        // Link(label);
+        // label.GetComponentInChildren<TextMesh>().text = registration.className;
+        // label.transform.parent = registration.gameObject.transform;
+        // label.transform.localPosition = new Vector3();
     }
 }

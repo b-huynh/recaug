@@ -32,6 +32,7 @@ public class GameManager : Singleton<GameManager>
     public int startAppID;
     
     private Stack<AppStackFrame> appStack = new Stack<AppStackFrame>();
+    public string stackHistory = "";
     public int currAppID
     { 
         get { return appStack.Count > 0 ? appStack.Peek().app.appID : -1; }
@@ -46,13 +47,13 @@ public class GameManager : Singleton<GameManager>
 
     // Location of config file
     private List<string> configHostList = new List<string>() {
-        "0.0.0.0",
+        // "0.0.0.0",
         // "192.168.10.19",
         // // "192.168.10.3",
         // // "192.168.10.25",
-        // "192.168.100.233",
-        // "192.168.100.244",
-        // "192.168.100.169",
+        "192.168.100.233",
+        "192.168.100.244",
+        "192.168.100.169",
     };
     public string configHost;
 
@@ -100,6 +101,8 @@ public class GameManager : Singleton<GameManager>
 
     void Update()
     {
+
+#if !WINDOWS_UWP
         List<string> debugWords = new List<string> {
             "bowl",
             "smartphone",
@@ -123,6 +126,7 @@ public class GameManager : Singleton<GameManager>
                     wordQ.Dequeue(), Utils.RandomPosition());
             }
         }
+#endif
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
@@ -144,7 +148,6 @@ public class GameManager : Singleton<GameManager>
                 }
             }
         }
-
 
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -237,13 +240,13 @@ public class GameManager : Singleton<GameManager>
     
     public void DebugStackFrame()
     {
-        string log = "[ ";
+        string log = "[TOP]";
         foreach(var sf in appStack)
         {
-            log += "[ " + sf.app.name + " ], ";
+            log += "[" + sf.app.name + "]";
         }
-        log += " ]";
-        Debug.Log(log);
+        log += "[END]";
+        stackHistory = log;
     }
 
     public void RequestAppFocus(int appID, 

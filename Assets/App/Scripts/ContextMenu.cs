@@ -96,6 +96,9 @@ public class ContextMenu : MonoBehaviour
         GetComponentInChildren<UIFocusableGroup>().enabled = true;
         GetComponentsInChildren<UIFocusable>().ToList().ForEach(c => c.enabled = true);
         isOpen = true;
+
+        string className = GetComponentInParent<ObjectRegistration>().className;
+        StatsTracker.Instance.LogContextMenuOpen(className);
     }
 
     public void Close()
@@ -107,6 +110,9 @@ public class ContextMenu : MonoBehaviour
         GetComponentInChildren<UIFocusableGroup>().enabled = false;
         GetComponentsInChildren<UIFocusable>().ToList().ForEach(c => c.enabled = false);
         isOpen = false;
+
+        string className = GetComponentInParent<ObjectRegistration>().className;
+        StatsTracker.Instance.LogContextMenuClose(className);
     }
 
     public static void OpenAll()

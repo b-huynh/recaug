@@ -57,6 +57,15 @@ namespace Recaug
             this.className = className;
             this.confidence = confidence;
             this.position = position;
+
+            
+            GetComponentInChildren<UIFadable>().OnFadeFocusEnter += delegate {
+                StatsTracker.Instance.LogHoverOn(className);
+            };
+
+            GetComponentInChildren<UIFadable>().OnFadeFocusExit += delegate {
+                StatsTracker.Instance.LogHoverOff(className);
+            };
         }
 
         public void UpdateGeometry(PredPoint3D point)

@@ -7,6 +7,8 @@ using HoloToolkit.Unity;
 public class RemoteDebug : Singleton<RemoteDebug> {
     private UdpClientUWP udpClient = null;
 
+    public CircularBuffer<string> history = new CircularBuffer<string>(50);
+
     protected override void Awake() {
         base.Awake();
         udpClient = new UdpClientUWP();
@@ -36,6 +38,8 @@ public class RemoteDebug : Singleton<RemoteDebug> {
             msg = string.Format("[{0}] {1}{2}", type.ToString().ToUpper(), 
                 condition, "\n    " + stackTrace.Replace ("\n", "\n    "));
         }
+
+        history.PushFront(msg);
 
 #if WINDOWS_UWP
         if (udpClient != null) {

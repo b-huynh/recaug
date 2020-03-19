@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,6 +23,9 @@ public class UIFadable : MonoBehaviour, IFocusable
         SetAlpha(stopVal);
     }
 
+    public event Action OnFadeFocusEnter = delegate {};
+    public event Action OnFadeFocusExit = delegate {};
+
     // Update is called once per frame
     void Update()
     {
@@ -30,8 +34,8 @@ public class UIFadable : MonoBehaviour, IFocusable
             // Is focusing, check if not focusing.
             if (!IntersectGaze())
             {
-                Debug.Log("Fade Exit");
                 exitTimer = fadeOutTime;
+                OnFadeFocusExit();
             }
         }
         
@@ -65,18 +69,19 @@ public class UIFadable : MonoBehaviour, IFocusable
 
     public void OnFocusEnter()
     {
-        Debug.Log("Focus Enter");
         exitTimer = 0.0f;
         SetAlpha(1.0f);
+
+        OnFadeFocusEnter();
     }
 
     public void OnFocusExit()
     {
-        if (!IntersectGaze())
-        {
-            Debug.Log("Fade Exit");
-            exitTimer = fadeOutTime;
-        }
-        Debug.Log("Focus Exit");
+        // if (!IntersectGaze())
+        // {
+        //     Debug.Log("Fade Exit");
+        //     exitTimer = fadeOutTime;
+        // }
+        // Debug.Log("Focus Exit");
     }
 }

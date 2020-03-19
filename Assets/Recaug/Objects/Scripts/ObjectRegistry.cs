@@ -38,6 +38,7 @@ namespace Recaug
 			{"vase", "potted plant"},
 			{"laptop", "tv"},
 			{"cell phone", "smartphone"},
+			{"cake", "donuts"}
 		};
 
 		protected override void Awake()
@@ -60,7 +61,7 @@ namespace Recaug
 		{
 			if (Input.GetKeyDown(KeyCode.T))
 			{
-				string filePath = "C:\\Users\\yukib\\AppData\\LocalLow\\DefaultCompany\\Recaug-v0_1\\258707b6-a269-4471-a9a9-c0a4173a17eb.log";
+				string filePath = "C:\\Users\\peter\\AppData\\LocalLow\\DefaultCompany\\Recaug-v0_1\\a55b40a1-7848-4329-9a06-522775a9f292.log";
 				LoadFromLog(filePath);
 			}
 		}
@@ -146,7 +147,7 @@ namespace Recaug
 					string[] columns = line.Split(',');
 					string positionStr = columns[3].TrimStart(' ');
 					Debug.Log(positionStr);
-					string[] positionValues = positionStr.Split(',');
+					string[] positionValues = positionStr.Split(';');
 					
 					string xStr = positionValues[0].TrimStart('(');
 					float x = float.Parse(xStr);

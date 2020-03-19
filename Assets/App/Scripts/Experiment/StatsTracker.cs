@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+#if WINDOWS_UWP
+using Windows.Storage;
+#endif
+
 using HoloToolkit.Unity;
 
 public class StatsTracker : Singleton<StatsTracker>
@@ -11,11 +15,11 @@ public class StatsTracker : Singleton<StatsTracker>
     private string SessionID = "";
 
     // public static int TotalActivities = 36; // The real amount for final experiment;
-    public static int TotalActivities = 5;
-    public static int CompletedActivities { get; private set; } = 0;
+    public static int TotalActivities = 18;
+    public int CompletedActivities { get; private set; } = 0;
 
     public static int TotalObjects = 21;
-    public static int DiscoveredObjects { get; private set; } = 0;
+    public int DiscoveredObjects { get; private set; } = 0;
 
     // Time task was started
     float timeStarted;
@@ -61,9 +65,9 @@ public class StatsTracker : Singleton<StatsTracker>
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.L))
+        if (Input.GetButtonDown("Log"))
         {
-            LogComplete();
+            WriteLog();
         }
     }
 
@@ -81,12 +85,15 @@ public class StatsTracker : Singleton<StatsTracker>
         lines.Add(String.Format("{0}, {1}, {2}",
             "complete", timeCompleted.ToString(), SessionID));
         WriteLog();
-        SessionID = "";
+        // SessionID = "";
     }
 
     public void LogObjectDiscovered(string className, Vector3 position)
     {
-        string positionStr = position.ToString("F3");
+        // string positionStr = position.ToString("F3");
+        string positionStr = string.Format("({0}; {1}; {2})",
+            position.x.ToString("F3"), position.y.ToString("F3"), 
+            position.z.ToString("F3"));
         if (DiscoveredObjects < TotalObjects)
         {
             objectDiscoveryLog[Time.time] = (className, positionStr);
@@ -143,6 +150,42 @@ public class StatsTracker : Singleton<StatsTracker>
         switchLog[Time.time] = (sourceApp, destApp, eventType);
         lines.Add(String.Format("{0}, {1}, {2}, {3}, {4}", 
             "appSwitch", Time.time.ToString(), sourceApp, destApp, eventType));
+    }
+
+    public void LogHoverOn(string className)
+    {
+        lines.Add(String.Format("{0}, {1}, {2}, {3}",
+            "hover", Time.time.ToString(), className, "on"));
+    }
+
+    public void LogHoverOff(string className)
+    {
+        lines.Add(String.Format("{0}, {1}, {2}, {3}",
+            "hover", Time.time.ToString(), className, "off"));
+    }
+
+    public void LogMenuOpen()
+    {
+        lines.Add(String.Format("{0}, {1}, {2}",
+            "menu", Time.time.ToString(), "open"));
+    }
+
+    public void LogMenuClose()
+    {
+        lines.Add(String.Format("{0}, {1}, {2}",
+            "menu", Time.time.ToString(), "close"));
+    }
+
+    public void LogContextMenuOpen(string className)
+    {
+        lines.Add(String.Format("{0}, {1}, {2}, {3}",
+            "contextMenu", Time.time.ToString(), className, "open"));
+    }
+
+    public void LogContextMenuClose(string className)
+    {
+        lines.Add(String.Format("{0}, {1}, {2}, {3}",
+            "contextMenu", Time.time.ToString(), className, "close"));
     }
 
     public void WriteLog()
