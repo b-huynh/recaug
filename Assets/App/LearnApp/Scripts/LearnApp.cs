@@ -7,9 +7,6 @@ using Recaug.Client;
 
 public class LearnApp : App
 {
-    // Object Discovery Prefab
-    public GameObject discoveryPrefab;
-
     // Learning Activity Prefab
     public GameObject objectTagPrefab;
 
