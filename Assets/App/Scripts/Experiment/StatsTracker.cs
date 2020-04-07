@@ -14,8 +14,8 @@ public class StatsTracker : Singleton<StatsTracker>
 {
     private string SessionID = "";
 
-    // public static int TotalActivities = 36; // The real amount for final experiment;
-    public static int TotalActivities = 18;
+    public static int TotalActivities = 36; // The real amount for final experiment;
+    // public static int TotalActivities = 18;
     public int CompletedActivities { get; private set; } = 0;
 
     public static int TotalObjects = 21;

@@ -174,6 +174,13 @@ public class ContextMenu : MonoBehaviour
             availableApps[appID].SetActive(false);
             availableApps.Remove(appID);
 
+            if(availableApps.Count == 0)
+            {
+                // Disable further interaction with this object... somehow
+                var pObj = transform.parent.gameObject;
+                pObj.GetComponentInChildren<UIFadable>().enabled = false;
+            }
+
             UpdateApplist();
         }
     }

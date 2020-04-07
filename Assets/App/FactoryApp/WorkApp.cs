@@ -13,17 +13,20 @@ public class WorkApp : App
         new Dictionary<string, (string, string)>()
     {
         {"tv", ("I want a bigger monitor", "Matt")},
-        {"mouse", ("This {0}  is broken", "Jeff")},
-        {"remote", ("{0} needs new batteries", "Jeff")},
+        {"mouse", ("This {0} is broken", "Jeff")},
         {"keyboard", ("This {0} is broken", "Jeff")},
-        {"cell phone", ("This {0} needs repair", "Jeff")},
-        {"clock", ("This {0} is wrong", "Jeff")},
-        {"vase", ("This {0} is cracked", "Christine")},
+
+        {"wine glass", ("Can we get some beer?", "Kouhei")},
         {"potted plant", ("The {0} needs water", "Christine")},
-        {"cup", ("Not enough {0}s", "Christine")},
-        {"bowl", ("Not enough {0}s", "Christine")},
-        {"apple", ("I want better snacks", "Matt")},
+        {"smartphone", ("This {0} needs repair", "Jeff")},
+
+        {"car", ("Can I get a company car?", "Matt")},
         {"chair", ("I want a new {0}", "Matt")},
+        {"clock", ("{0} needs new batteries", "Jeff")},
+
+        {"cup", ("Not enough {0}s", "Christine")},
+        {"book", ("Can you get the new edition?", "Christine")},
+        {"apple", ("I want better snacks", "Matt")},        
     };
 
     // Start is called before the first frame update

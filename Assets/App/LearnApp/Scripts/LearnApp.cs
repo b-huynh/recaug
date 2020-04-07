@@ -11,14 +11,22 @@ public class LearnApp : App
     public GameObject objectTagPrefab;
 
     // Learning State
-    public List<string> knownWords = new List<string> {
-        "keyboard",
-        "tv",
-        "mouse",
+    private List<string> knownWords = new List<string> {
+        "zebra",
+        "giraffe",
         "bottle",
+
+        "car",
+        "chair",
+        "clock",
+
         "cup",
-        "wine glass",
-        "chair"
+        "book",
+        "apple",
+
+        "scissors",
+        "airplane",
+        "donut",
     };
     private Dictionary<string, GameObject> toLearn;
     private List<string> learned;

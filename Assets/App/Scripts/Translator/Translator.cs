@@ -95,6 +95,8 @@ public static class Translator {
 				{"toaster", "tostadora"},
 				{"book", "libro"},
 				{"smartphone", "teléfono móvil"},
+				{"scissors", "tijeras"},
+				{"clock", "reloj"},
 			}
 		}, 
 		{
@@ -181,6 +183,9 @@ public static class Translator {
 				{"toaster", "トースター"},
 				{"book", "本"},
 				{"smartphone", "スマートフォン"},
+				{"scissors", "はさみ"},
+				{"clock", "統計"},
+
 			}
 		}
 	};

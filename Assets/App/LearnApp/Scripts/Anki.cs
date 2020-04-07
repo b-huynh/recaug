@@ -69,7 +69,7 @@ public class Anki : MonoBehaviour
         {
             response.SetActive(true);
             response.GetComponent<UIFocusable>().OnSelect += delegate {
-                string item = frontDialogue;
+                string item = objectRegistration.name;
                 string responseValue = response.GetComponent<TextMesh>().text;
 
                 Debug.LogFormat("Item {0} Selected {1}", item, responseValue);

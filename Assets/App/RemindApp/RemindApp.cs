@@ -12,27 +12,30 @@ public class RemindApp : App
     private Dictionary<string, (string, string)> dialogue =
         new Dictionary<string, (string, string)>()
     {
-        {"apple", ("Remember to buy more apples", "Rie")},
-        {"cup", ("Remember to wash the dishes", "Rie")},
-        {"bowl", ("Remember to wash the dishes", "Rie")},
-        {"bottle", ("Remember to wash the dishes", "Rie")},
-        {"donut", ("Wanna grab some donuts after work?", "Tom")},
+        {"tennis racket", ("Restring tennis racket", "Tom")},
         {"sports ball", ("Wanna play tennis this weekend?", "Tom")},
+        {"teddy bear", ("Remind me to buy gift for Rie", "Myself")},
+
+        {"wine glass", ("Remind me to buy wine for Rie", "Myself")},
         {"potted plant", ("Remind me to water the plants", "Myself")},
         {"smartphone", ("Remind me to call mom", "Myself")},
-        {"teddy bear", ("Remind me to buy gift for Rie", "Myself")},
-        {"wine glass", ("Remind me to buy wine for Rie", "Myself")},
-        {"cake", ("Remind me to buy cake for Rie", "Myself")},
+
+        {"cup", ("Remember to wash the dishes", "Rie")},
+        {"book", ("Remember to read", "Rie")},
+        {"apple", ("Remember to buy more apples", "Rie")},
+        
         {"scissors", ("Remind me to get a haircut", "Myself")},
+        {"airplane", ("Buy airplane tickets for vacation", "Myself")},
+        {"donut", ("Wanna grab some donuts after work?", "Tom")},    
     };
 
-    private List<string> knownObjects = new List<string> {
-        "keyboard",
-        "bowl",
-        "bottle",
-        "cup",
-        "teddy bear"
-    };
+    // private List<string> knownObjects = new List<string> {
+    //     "keyboard",
+    //     "bowl",
+    //     "bottle",
+    //     "cup",
+    //     "teddy bear"
+    // };
 
     // Start is called before the first frame update
     protected override void Awake()
@@ -44,10 +47,10 @@ public class RemindApp : App
 
     void Start()
     {
-        if (Config.Loaded)
-        {
-            knownObjects = new List<string>(Config.Experiment.AppObjects3);
-        }
+        // if (Config.Loaded)
+        // {
+        //     knownObjects = new List<string>(Config.Experiment.AppObjects3);
+        // }
     }
 
     // Update is called once per frame

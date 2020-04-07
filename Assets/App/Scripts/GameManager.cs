@@ -47,7 +47,7 @@ public class GameManager : Singleton<GameManager>
 
     // Location of config file
     private List<string> configHostList = new List<string>() {
-        "192.168.10.15"
+        "192.168.100.233"
         // "0.0.0.0",
         // "192.168.10.19",
         // "192.168.100.233",
