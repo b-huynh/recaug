@@ -89,6 +89,12 @@ public class ContextMenu : MonoBehaviour
 
     public void Open()
     {
+        if (Config.Experiment.Multitasking != MultitaskingType.InSitu &&
+            Config.Experiment.Multitasking != MultitaskingType.ManualInSitu)
+        {
+            return; // Context menu not enabled without these multitasking options
+        }
+
         foreach(var renderer in GetComponentsInChildren<Renderer>())
         {
             renderer.enabled = true;

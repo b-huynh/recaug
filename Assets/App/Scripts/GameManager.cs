@@ -18,7 +18,7 @@ public struct AppStackFrame
 
 public enum MultitaskingType
 {
-    Manual, InSitu, ManualInSitu, Automatic
+    Invalid, Manual, InSitu, ManualInSitu, Automatic
 }
 
 
@@ -47,13 +47,12 @@ public class GameManager : Singleton<GameManager>
 
     // Location of config file
     private List<string> configHostList = new List<string>() {
+        "192.168.10.15"
         // "0.0.0.0",
         // "192.168.10.19",
-        // // "192.168.10.3",
-        // // "192.168.10.25",
-        "192.168.100.233",
-        "192.168.100.244",
-        "192.168.100.169",
+        // "192.168.100.233",
+        // "192.168.100.244",
+        // "192.168.100.169",
     };
     public string configHost;
 
@@ -82,13 +81,22 @@ public class GameManager : Singleton<GameManager>
                 break;
             }
         }
-        
-        RecaugClient.Instance.Init(Config.Params.Recaug);
-        RecaugClient.Instance.OnNearIn += OnNearIn;
-        RecaugClient.Instance.OnNearOut += OnNearOut;
 
-        sessionID = System.Guid.NewGuid().ToString();
-        StatsTracker.Instance.LogStart(sessionID);
+        if (Config.Experiment.Multitasking != MultitaskingType.Invalid)
+        {
+            Debug.Log("Using multitasking type: " + Config.Experiment.Multitasking.ToString());
+
+            RecaugClient.Instance.Init(Config.Params.Recaug);
+            RecaugClient.Instance.OnNearIn += OnNearIn;
+            RecaugClient.Instance.OnNearOut += OnNearOut;
+
+            sessionID = System.Guid.NewGuid().ToString();
+            StatsTracker.Instance.LogStart(sessionID);
+        }
+        else
+        {
+            GameObject.FindObjectOfType<DevWindow>().inDebugHUD = true;
+        }
 
         // currAppID = startAppID;
         RequestAppFocus(0);
@@ -205,7 +213,6 @@ public class GameManager : Singleton<GameManager>
             }
         }
     }
-
 
     private void SoftReset()
     {

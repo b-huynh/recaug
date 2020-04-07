@@ -13,7 +13,7 @@ public class DevWindow : MonoBehaviour
     // State
     enum InspectorTab { CONFIG = 0, LOG = 1 }
     private InspectorTab currentTab = InspectorTab.LOG;
-    private bool inDebugHUD = false;
+    public bool inDebugHUD = false;
     private bool isEnteringCommand = false;
     private string currentCommand = "";
 
@@ -35,9 +35,6 @@ public class DevWindow : MonoBehaviour
         cam = Camera.main;
         cursor = GameObject.Find("/Cursor");
     }
-
-
-
 
     // Update is called once per frame
     void Update()
@@ -132,6 +129,9 @@ public class DevWindow : MonoBehaviour
             cursor.transform.position.ToString());
         toDraw += string.Format("[app stack]: {0}\n",
             GameManager.Instance.stackHistory);
+
+        toDraw += string.Format("[modality]: {0}\n",
+            Config.Experiment.Multitasking.ToString());
 
         text1.text = toDraw;
     }

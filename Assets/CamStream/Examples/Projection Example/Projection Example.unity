@@ -582,7 +582,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df830760c5db65341841b865df379442, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  delta: 0.01
+  delta: 0.005
   wasd: 1
   arrows: 0
 --- !u!20 &1242196588
@@ -1098,7 +1098,7 @@ MonoBehaviour:
   appName: Lang. Learn
   appDescription: 
   appLogo: {fileID: 2100000, guid: d4491367b111d5c49aaaabea280ba211, type: 2}
-  objectTagPrefab: {fileID: 7225996299567637764, guid: 2c24d54758204a645a36a5e9575758b8,
+  objectTagPrefab: {fileID: 8000826451949240098, guid: 5d365231794d14f4bb28eb7deca143b9,
     type: 3}
   knownWords:
   - keyboard
@@ -1410,6 +1410,75 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a5cf0746dd8678a4b8a731a99b697cf0, type: 3}
+--- !u!1001 &2129654705515589293
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 8000826451949240098, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_Name
+      value: AnkiMenu
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 24
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8000826451949240101, guid: 5d365231794d14f4bb28eb7deca143b9,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5d365231794d14f4bb28eb7deca143b9, type: 3}
 --- !u!1001 &2228317745226510706
 PrefabInstance:
   m_ObjectHideFlags: 0

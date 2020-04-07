@@ -54,6 +54,12 @@ public class AppTabs : Singleton<AppTabs>
     // Update is called once per frame
     void Update()
     {
+        if (Config.Experiment.Multitasking != MultitaskingType.Manual &&
+            Config.Experiment.Multitasking != MultitaskingType.ManualInSitu)
+        {
+            return; // Not enabled
+        }
+
         // Maintain activeIndicator position
         if (GameManager.Instance.currAppID != -1)
         {

@@ -74,7 +74,8 @@ public class LearnApp : App
         // float endScaleZ = geometry.extentsMax.z - geometry.extentsMin.z;
         // Debug.LogFormat("Desired Scale: {0}, {1}, {2}", endScaleX, endScaleY, endScaleZ);
 
-        CreateQuizContent(registration);
+        // CreateQuizContent(registration);
+        CreateAnkiContent(registration);
 
         // var discovery = GameObject.Instantiate(discoveryPrefab,
         //     registration.position, transform.rotation);
@@ -112,6 +113,19 @@ public class LearnApp : App
         //     toLearn[callFrame.callerObject.className].SetActive(true);
         //     releaseFocusAfterQuiz = true;
         // }
+    }
+
+    void CreateAnkiContent(ObjectRegistration registration)
+    {
+        var menu = GameObject.Instantiate(objectTagPrefab);
+        Link(menu);
+        menu.transform.position = Utils.RandomMenuPosition(registration.position);
+
+        menu.GetComponent<Anki>().SetContent(registration);
+        menu.GetComponent<Anki>().owner = this;
+
+        menu.GetComponent<MenuElement>().AttachObject(registration);
+        menu.GetComponent<MenuElement>().OpenMenu();
     }
 
     void CreateQuizContent(ObjectRegistration registration)

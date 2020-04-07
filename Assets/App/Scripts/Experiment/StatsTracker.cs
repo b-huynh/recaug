@@ -55,6 +55,7 @@ public class StatsTracker : Singleton<StatsTracker>
         new SortedDictionary<float, (string, string, string)>();
 
     private List<string> lines = new List<string>();
+    private List<string> cameraLog = new List<string>();
 
     // Start is called before the first frame update
     void Start()
@@ -65,10 +66,20 @@ public class StatsTracker : Singleton<StatsTracker>
     // Update is called once per frame
     void Update()
     {
+        LogCamera();
         if (Input.GetButtonDown("Log"))
         {
             WriteLog();
         }
+    }
+
+    public void LogCamera()
+    {
+        cameraLog.Add(String.Format("{0} | {1} | {2}",
+            Time.time.ToString(),
+            Camera.main.transform.position.ToString("F3"),
+            Camera.main.transform.rotation.ToString("F3"))
+        );
     }
 
     public void LogStart(string sessionID)
@@ -192,16 +203,22 @@ public class StatsTracker : Singleton<StatsTracker>
     {
         // Log output location
         string fileName = SessionID + ".log";
+        string cameraFileName = SessionID + ".camera.log";
 
 #if WINDOWS_UWP
         string filePath =
             Path.Combine(ApplicationData.Current.LocalFolder.Path, fileName);
+        string cameraFilePath =
+            Path.Combine(ApplicationData.Current.LocalFolder.Path, cameraFileName);
 #else
         string filePath =
             Path.Combine(Application.persistentDataPath, fileName);
+        string cameraFilePath =
+            Path.Combine(Application.persistentDataPath, cameraFileName);
 #endif
 
         Debug.Log("Writing to file: " + filePath);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
         File.WriteAllLines(filePath, lines);
+        File.WriteAllLines(cameraFilePath, cameraLog);
     }
 }
