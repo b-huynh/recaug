@@ -41,6 +41,45 @@ namespace Recaug
 			{"cake", "donuts"}
 		};
 
+		//TODO: Remove this before experiment.
+		private float earlyWindow = 45;
+		private bool earlyRegistryComplete = false;
+		private Dictionary<string, Vector3> EarlyAutoRegistry =
+			new Dictionary<string, Vector3>()
+		{
+			{"apple", new Vector3(-0.591f, 0.286f, -8.618f)},
+			{"sports ball", new Vector3(-1.080f, 0.242f, -9.194f)},
+		};
+
+		private float autoWindow = 180; // Amount of seconds before auto registry.
+		private bool autoRegistryComplete = false;
+		private Dictionary<string, Vector3> AutoRegistry =
+			new Dictionary<string, Vector3>()
+		{
+			{"apple", new Vector3(-0.591f, 0.286f, -8.618f)},
+			{"sports ball", new Vector3(-1.080f, 0.242f, -9.194f)},
+			{"giraffe", new Vector3(-1.079f, 0.222f, -8.911f)},
+			{"donut", new Vector3(-0.859f, 0.249f, -8.418f)},
+			{"chair", new Vector3(0.649f, -0.104f, -9.013f)},
+			{"car", new Vector3(-1.466f, 0.243f, -9.261f)},
+
+			{"clock", new Vector3(-0.097f, -0.275f, -7.761f)},
+			{"teddy bear", new Vector3(0.490f, 0.322f, -8.009f)},
+			{"scissors", new Vector3(0.261f, 0.221f, -8.345f)},
+			{"keyboard", new Vector3(0.794f, 0.218f, -8.665f)},
+			{"book", new Vector3(1.166f, 0.274f, -8.689f)},
+			{"tv", new Vector3(0.995f, 0.411f, -8.392f)},
+			{"potted plant", new Vector3(0.687f, 0.269f, -8.197f)},
+			{"mouse", new Vector3(1.036f, 0.211f, -8.886f)},
+			{"smartphone", new Vector3(0.485f, 0.214f, -8.449f)},
+			{"bottle", new Vector3(-1.292f, 0.297f, -8.806f)},
+			{"wine glass", new Vector3(-1.131f, 0.227f, -8.652f)},
+			{"cup", new Vector3(-1.227f, 0.277f, -9.043f)},
+			{"zebra", new Vector3(-0.887f, 0.228f, -9.071f)},
+			{"airplane", new Vector3(-0.816f, 0.243f, -8.845f)},
+			{"tennis racket", new Vector3(-1.240f, 0.216f, -9.415f)},
+		};
+
 		protected override void Awake()
 		{
 			base.Awake();
@@ -59,6 +98,24 @@ namespace Recaug
 
 		public void Update() 
 		{
+			// if (!earlyRegistryComplete && Time.time > earlyWindow)
+			// {
+			// 	foreach(var kv in EarlyAutoRegistry)
+			// 	{
+			// 		Register(kv.Key, kv.Value);
+			// 	}
+			// 	earlyRegistryComplete = true;
+			// }
+
+			// if (!autoRegistryComplete && Time.time > autoWindow)
+			// {
+			// 	foreach(var kv in AutoRegistry)
+			// 	{
+			// 		Register(kv.Key, kv.Value);
+			// 	}
+			// 	autoRegistryComplete = true;
+			// }
+
 			if (Input.GetKeyDown(KeyCode.T))
 			{
 				string filePath = "C:\\Users\\peter\\AppData\\LocalLow\\DefaultCompany\\Recaug-v0_1\\a55b40a1-7848-4329-9a06-522775a9f292.log";

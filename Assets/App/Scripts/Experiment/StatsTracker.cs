@@ -113,6 +113,9 @@ public class StatsTracker : Singleton<StatsTracker>
 
         lines.Add(String.Format("{0}, {1}, {2}, {3}", 
             "object", Time.time.ToString(), className, positionStr));
+
+        Debug.LogFormat("Object Registered: {0}, {1} / {2}",
+            className, DiscoveredObjects, TotalObjects);
     }
 
     public void LogActivity(string className, string appName, string response)
@@ -124,6 +127,9 @@ public class StatsTracker : Singleton<StatsTracker>
 
             lines.Add(String.Format("{0}, {1}, {2}, {3}, {4}", 
                 "activity", Time.time.ToString(), className, appName, response));
+
+            Debug.LogFormat("Complete Activities: {0} / {1}",
+                CompletedActivities, TotalActivities);
 
             if (CompletedActivities >= TotalActivities)
             {
